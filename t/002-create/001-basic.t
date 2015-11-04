@@ -15,6 +15,7 @@ BEGIN {
     use_ok('SQL::Composer::Select');
 
     use_ok('SQL::Action::Create::One');
+    use_ok('SQL::Action::Create::Many');
 
     use_ok('SQL::Action::Fetch::One');
     use_ok('SQL::Action::Fetch::Many');
@@ -36,18 +37,29 @@ subtest '... simple insert' => sub {
     );
 
     $new_person_query->create_related(
-        comments => SQL::Action::Create::One->new(
+        comments => SQL::Action::Create::Many->new(
             composer => sub {
                 my $result = $_[0];
-                SQL::Composer::Insert->new(
-                    into   => 'comment',
-                    values => [
-                        id       => 5,
-                        body     => 'Wassup!',
-                        article  => 1,
-                        author   => $result->{id}
-                    ]
-                )
+                return [
+                    SQL::Composer::Insert->new(
+                        into   => 'comment',
+                        values => [
+                            id       => 5,
+                            body     => 'Wassup!',
+                            article  => 1,
+                            author   => $result->{id}
+                        ]
+                    ),
+                    SQL::Composer::Insert->new(
+                        into   => 'comment',
+                        values => [
+                            id       => 6,
+                            body     => 'DOH!',
+                            article  => 1,
+                            author   => $result->{id}
+                        ]
+                    ),
+                ]
             }
         )
     );
@@ -56,8 +68,8 @@ subtest '... simple insert' => sub {
 
     is_deeply(
         $new_person_info,
-        { id => 3, comments => { id => 5 } },
-        '... got the expected data'
+        { id => 3, comments => { ids => [ 5, 6 ] } },
+        '... got the expected insert info'
     );
 
     my $person_query = SQL::Action::Fetch::One->new(
@@ -88,8 +100,12 @@ subtest '... simple insert' => sub {
             age      => 25,
             comments => [
                 {
-                    id   => $new_person_info->{comments}->{id},
+                    id   => $new_person_info->{comments}->{ids}->[0],
                     body => 'Wassup!'
+                },
+                {
+                    id   => $new_person_info->{comments}->{ids}->[1],
+                    body => 'DOH!'
                 },
             ]
         },
