@@ -23,7 +23,7 @@ has '_relations' => (
 );
 
 sub execute {
-    my ($self, $dbh, $attrs, $result) = @_;
+    my ($self, $dbh, $result) = @_;
 
     my $composer = $self->composer;
     $composer = $composer->( $result )
@@ -38,7 +38,7 @@ sub execute {
     my $hash = { id => $dbh->last_insert_id( undef, undef, undef, undef, {} ) };
 
     foreach my $rel ( keys %{ $self->{_relations} } ) {
-        $hash->{ $rel } = $self->{_relations}->{ $rel }->execute( $dbh, $attrs, $hash );
+        $hash->{ $rel } = $self->{_relations}->{ $rel }->execute( $dbh, $hash );
     }
 
     return $hash;

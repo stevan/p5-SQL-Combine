@@ -12,7 +12,7 @@ has 'composer' => (
 );
 
 sub execute {
-    my ($self, $dbh, $attrs, $result) = @_;
+    my ($self, $dbh, $result) = @_;
 
     my $composers = $self->composer;
     $composers = $composers->( $result )
