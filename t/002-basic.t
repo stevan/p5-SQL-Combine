@@ -109,7 +109,7 @@ subtest '... get person with all relations (raw)' => sub {
                 my $result = $_[0];
                 SQL::Composer::Select->new(
                     from    => 'comment',
-                    columns => [qw[ id body ]],
+                    columns => [qw[ id ]],
                     where   => [ author => $result->{id}, article => $ARTICLE_ID ],
                 )
             }
@@ -148,7 +148,7 @@ subtest '... get person with all relations (raw)' => sub {
                 name     => 'Bob',
                 age      => 30,
                 comments => [
-                    { id => 1, body => 'Yo!' }
+                    { id => 1 }
                 ]
             }
         },
