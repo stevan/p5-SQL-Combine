@@ -17,6 +17,17 @@ has 'inflator' => (
     predicate => 'has_inflator'
 );
 
+has '_relations' => (
+    traits  => [ 'Hash' ],
+    is      => 'ro',
+    isa     => 'HashRef[SQL::Action::Fetch]',
+    lazy    => 1,
+    default => sub { +{} },
+    handles => {
+        fetch_related => 'set'
+    }
+);
+
 sub execute {
     my ($self, $dbh, $attrs, $result) = @_;
 
@@ -34,7 +45,14 @@ sub execute {
     return unless @$rows;
 
     my $hashes = $composer->from_rows($rows);
-    my $objs   = $self->has_inflator ? $self->inflator->( $hashes ) : $hashes;
+
+    foreach my $hash ( @$hashes ) {
+        foreach my $rel ( keys %{ $self->{_relations} } ) {
+            $hash->{ $rel } = $self->{_relations}->{ $rel }->execute( $dbh, $attrs, $hash );
+        }
+    }
+
+    my $objs = $self->has_inflator ? $self->inflator->( $hashes ) : $hashes;
 
     return $objs;
 }

@@ -19,7 +19,7 @@ BEGIN {
 
 my $DBH = Util::setup_dbh;
 
-subtest '... get person with all relations (raw)' => sub {
+subtest '... get article with all relations (raw)' => sub {
 
     my $ARTICLE_ID = 1;
 
@@ -80,7 +80,7 @@ subtest '... get person with all relations (raw)' => sub {
 
 };
 
-subtest '... get person with all relations (raw)' => sub {
+subtest '... get article with approve & approver.comments' => sub {
 
     my $ARTICLE_ID = 1;
 
@@ -116,6 +116,10 @@ subtest '... get person with all relations (raw)' => sub {
         )
     );
 
+    # NOTE:
+    # This overrides the approver (id)
+    # in the original result set
+    # - SL
     $article_query->fetch_related( approver => $approver_query );
 
     $article_query->fetch_related(
@@ -151,6 +155,82 @@ subtest '... get person with all relations (raw)' => sub {
                     { id => 1 }
                 ]
             }
+        },
+        '... got the uninflated stuff as expected'
+    );
+
+};
+
+subtest '... get article with all relations (raw)' => sub {
+
+    my $ARTICLE_ID = 1;
+
+    my $article_query = SQL::Action::Fetch::One->new(
+        composer => SQL::Composer::Select->new(
+            from    => 'article',
+            columns => [qw[ id title body created updated status ]],
+            where   => [ id => $ARTICLE_ID ],
+        )
+    );
+
+    my $comments_query = SQL::Action::Fetch::Many->new(
+        composer => SQL::Composer::Select->new(
+            from    => 'comment',
+            columns => [qw[ id body author ]],
+            where   => [ article => $ARTICLE_ID ],
+        )
+    );
+
+    # NOTE:
+    # This overrides the author (id)
+    # in the original result set
+    # - SL
+    $comments_query->fetch_related(
+        author => SQL::Action::Fetch::One->new(
+            composer => sub {
+                my $result = $_[0];
+                SQL::Composer::Select->new(
+                    from    => 'person',
+                    columns => [qw[ id name age ]],
+                    where   => [ id => $result->{author} ],
+                )
+            }
+        )
+    );
+
+    $article_query->fetch_related( comments => $comments_query );
+
+    my $article = $article_query->execute( $DBH, {} );
+
+    is_deeply(
+        $article,
+        {
+            id      => 1,
+            title   => 'Title(1)',
+            body    => 'Body(1)',
+            status  => 'pending',
+            created => $article->{created},
+            updated => $article->{updated},
+            comments => [
+                {
+                    id     => 1,
+                    body   => 'Yo!',
+                    author => {
+                        id   => 1,
+                        name => 'Bob',
+                        age  => 30
+                    }
+                },
+                {
+                    id     => 2,
+                    body   => 'Hey!',
+                    author => {
+                        id   => 2,
+                        name => 'Alice',
+                        age  => 32
+                    }
+                }
+            ],
         },
         '... got the uninflated stuff as expected'
     );
