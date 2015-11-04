@@ -1,20 +1,18 @@
 package SQL::Action::Create::Many;
 use Moose;
 
-use SQL::Action::Types;
-
 with 'SQL::Action::Create';
 
-has 'composer' => (
+has 'composers' => (
     is       => 'ro',
     isa      => 'ArrayRef[SQL::Composer::Insert] | CodeRef',
     required => 1,
 );
 
 sub execute {
-    my ($self, $dbh, $result) = @_;
+    my ($self, $dbm, $result) = @_;
 
-    my $composers = $self->composer;
+    my $composers = $self->composers;
     $composers = $composers->( $result )
         if ref $composers eq 'CODE';
 
@@ -24,6 +22,7 @@ sub execute {
         my $sql  = $composer->to_sql;
         my @bind = $composer->to_bind;
 
+        my $dbh = $dbm->rw( $self->schema );
         my $sth = $dbh->prepare( $sql );
         $sth->execute( @bind );
 

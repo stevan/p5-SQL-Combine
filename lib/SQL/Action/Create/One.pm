@@ -1,8 +1,6 @@
 package SQL::Action::Create::One;
 use Moose;
 
-use SQL::Action::Types;
-
 with 'SQL::Action::Create';
 
 has 'composer' => (
@@ -11,19 +9,8 @@ has 'composer' => (
     required => 1,
 );
 
-has '_relations' => (
-    traits  => [ 'Hash' ],
-    is      => 'ro',
-    isa     => 'HashRef[SQL::Action::Create]',
-    lazy    => 1,
-    default => sub { +{} },
-    handles => {
-        create_related => 'set'
-    }
-);
-
 sub execute {
-    my ($self, $dbh, $result) = @_;
+    my ($self, $dbm, $result) = @_;
 
     my $composer = $self->composer;
     $composer = $composer->( $result )
@@ -32,13 +19,15 @@ sub execute {
     my $sql  = $composer->to_sql;
     my @bind = $composer->to_bind;
 
+    my $dbh = $dbm->rw( $self->schema );
     my $sth = $dbh->prepare( $sql );
     $sth->execute( @bind );
 
     my $hash = { id => $dbh->last_insert_id( undef, undef, undef, undef, {} ) };
 
-    foreach my $rel ( keys %{ $self->{_relations} } ) {
-        $hash->{ $rel } = $self->{_relations}->{ $rel }->execute( $dbh, $hash );
+    my %relations = $self->all_relations;
+    foreach my $rel ( keys %relations ) {
+        $hash->{ $rel } = $relations{ $rel }->execute( $dbm, $hash );
     }
 
     return $hash;

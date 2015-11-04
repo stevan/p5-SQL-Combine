@@ -13,11 +13,18 @@ use Test::More;
 BEGIN {
     use_ok('SQL::Composer::Select');
 
+    use_ok('SQL::Action::DBH::Manager');
+
     use_ok('SQL::Action::Fetch::One');
     use_ok('SQL::Action::Fetch::Many');
 }
 
 my $DBH = Util::setup_dbh;
+
+my $dbm = SQL::Action::DBH::Manager->new(
+    mapping => { __DEFAULT__ => { rw => $DBH } }
+);
+isa_ok($dbm, 'SQL::Action::DBH::Manager');
 
 subtest '... get article with all relations (raw)' => sub {
 
@@ -54,7 +61,7 @@ subtest '... get article with all relations (raw)' => sub {
         )
     );
 
-    my $article = $article_query->execute( $DBH, {} );
+    my $article = $article_query->execute( $dbm, {} );
 
     is_deeply(
         $article,
@@ -132,7 +139,7 @@ subtest '... get article with approve & approver.comments' => sub {
         )
     );
 
-    my $article = $article_query->execute( $DBH, {} );
+    my $article = $article_query->execute( $dbm, {} );
 
     is_deeply(
         $article,
@@ -200,7 +207,7 @@ subtest '... get article with all relations (raw)' => sub {
 
     $article_query->fetch_related( comments => $comments_query );
 
-    my $article = $article_query->execute( $DBH, {} );
+    my $article = $article_query->execute( $dbm, {} );
 
     is_deeply(
         $article,

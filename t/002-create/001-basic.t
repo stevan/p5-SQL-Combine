@@ -14,6 +14,8 @@ BEGIN {
     use_ok('SQL::Composer::Insert');
     use_ok('SQL::Composer::Select');
 
+    use_ok('SQL::Action::DBH::Manager');
+
     use_ok('SQL::Action::Create::One');
     use_ok('SQL::Action::Create::Many');
 
@@ -23,9 +25,18 @@ BEGIN {
 
 my $DBH = Util::setup_dbh;
 
+my $dbm = SQL::Action::DBH::Manager->new(
+    mapping => {
+        user     => { rw => $DBH },
+        comments => { rw => $DBH },
+    }
+);
+isa_ok($dbm, 'SQL::Action::DBH::Manager');
+
 subtest '... simple insert' => sub {
 
     my $new_person_query = SQL::Action::Create::One->new(
+        schema   => 'user',
         composer => SQL::Composer::Insert->new(
             into   => 'person',
             values => [
@@ -38,7 +49,8 @@ subtest '... simple insert' => sub {
 
     $new_person_query->create_related(
         comments => SQL::Action::Create::Many->new(
-            composer => sub {
+            schema    => 'comments',
+            composers => sub {
                 my $result = $_[0];
                 return [
                     SQL::Composer::Insert->new(
@@ -64,7 +76,7 @@ subtest '... simple insert' => sub {
         )
     );
 
-    my $new_person_info = $new_person_query->execute( $DBH, {} );
+    my $new_person_info = $new_person_query->execute( $dbm, {} );
 
     is_deeply(
         $new_person_info,
@@ -73,6 +85,7 @@ subtest '... simple insert' => sub {
     );
 
     my $person_query = SQL::Action::Fetch::One->new(
+        schema   => 'user',
         composer => SQL::Composer::Select->new(
             from    => 'person',
             columns => [qw[ id name age ]],
@@ -82,6 +95,7 @@ subtest '... simple insert' => sub {
 
     $person_query->fetch_related(
         comments => SQL::Action::Fetch::Many->new(
+            schema   => 'comments',
             composer => SQL::Composer::Select->new(
                 from    => 'comment',
                 columns => [qw[ id body ]],
@@ -90,7 +104,7 @@ subtest '... simple insert' => sub {
         )
     );
 
-    my $jim = $person_query->execute( $DBH, {} );
+    my $jim = $person_query->execute( $dbm, {} );
 
     is_deeply(
         $jim,

@@ -13,10 +13,11 @@ use Test::More;
 BEGIN {
     use_ok('SQL::Composer::Select');
 
+    use_ok('SQL::Action::DBH::Manager');
+
     use_ok('SQL::Action::Fetch::One');
     use_ok('SQL::Action::Fetch::Many');
 }
-
 
 package Person {
     use Moose;
@@ -49,11 +50,20 @@ package Article {
 
 my $DBH = Util::setup_dbh;
 
+my $dbm = SQL::Action::DBH::Manager->new(
+    mapping => {
+        user        => { ro => $DBH },
+        __DEFAULT__ => { rw => $DBH },
+    }
+);
+isa_ok($dbm, 'SQL::Action::DBH::Manager');
+
 subtest '... get person with all relations (inflated)' => sub {
 
     my $PERSON_ID = 1;
 
     my $person_query = SQL::Action::Fetch::One->new(
+        schema   => 'user',
         composer => SQL::Composer::Select->new(
             from    => 'person',
             columns => [qw[ id name age ]],
@@ -93,7 +103,7 @@ subtest '... get person with all relations (inflated)' => sub {
         )
     );
 
-    my $bob = $person_query->execute( $DBH, {} );
+    my $bob = $person_query->execute( $dbm, {} );
     isa_ok($bob, 'Person');
 
     is($bob->id, $PERSON_ID, '... got the expected id');
@@ -161,7 +171,7 @@ subtest '... get person with all relations (raw)' => sub {
         )
     );
 
-    my $bob = $person_query->execute( $DBH, {} );
+    my $bob = $person_query->execute( $dbm, {} );
 
     is_deeply(
         $bob,
