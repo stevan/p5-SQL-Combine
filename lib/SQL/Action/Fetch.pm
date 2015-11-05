@@ -17,9 +17,8 @@ has 'inflator' => (
     predicate => 'has_inflator'
 );
 
-has '_relations' => (
+has 'relations' => (
     traits   => [ 'Hash' ],
-    init_arg => undef,
     is       => 'ro',
     isa      => 'HashRef[SQL::Action::Fetch]',
     lazy     => 1,
