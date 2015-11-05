@@ -1,7 +1,7 @@
 package SQL::Action::DBH::Manager;
 use Moose;
 
-has 'mapping' => (
+has 'schemas' => (
     is       => 'ro',
     isa      => 'HashRef',
     required => 1,
@@ -9,8 +9,8 @@ has 'mapping' => (
 
 sub ro {
     my ($self, $table) = @_;
-    my $map = $self->mapping->{ $table // '__DEFAULT__' }
-            // $self->mapping->{__DEFAULT__}
+    my $map = $self->schemas->{ $table // '__DEFAULT__' }
+            // $self->schemas->{__DEFAULT__}
             // confess 'Unable to find handle for `'.$table.'`';
     return $map->{ro}
             // $map->{rw}
@@ -19,8 +19,8 @@ sub ro {
 
 sub rw {
     my ($self, $table) = @_;
-    my $map = $self->mapping->{ $table // '__DEFAULT__' }
-            // $self->mapping->{__DEFAULT__}
+    my $map = $self->schemas->{ $table // '__DEFAULT__' }
+            // $self->schemas->{__DEFAULT__}
             // confess 'Unable to find handle for `'.$table.'`';
     return $map->{rw}
             // confess 'Unable to find `rw` handle for `'.$table.'`';

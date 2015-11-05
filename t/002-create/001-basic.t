@@ -26,7 +26,7 @@ BEGIN {
 my $DBH = Util::setup_dbh;
 
 my $dbm = SQL::Action::DBH::Manager->new(
-    mapping => {
+    schemas => {
         user     => { rw => $DBH },
         comments => { rw => $DBH },
     }

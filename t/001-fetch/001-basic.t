@@ -51,7 +51,7 @@ package Article {
 my $DBH = Util::setup_dbh;
 
 my $dbm = SQL::Action::DBH::Manager->new(
-    mapping => {
+    schemas => {
         user        => { ro => $DBH },
         __DEFAULT__ => { rw => $DBH },
     }
