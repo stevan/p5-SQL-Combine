@@ -23,7 +23,7 @@ BEGIN {
     use_ok('SQL::Action::Fetch::Many');
 }
 
-my $DBH = Util::setup_dbh;
+my $DBH = Util::setup_database( Util::setup_sqlite_dbh );
 
 my $dbm = SQL::Action::DBH::Manager->new(
     schemas => {
