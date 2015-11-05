@@ -5,16 +5,15 @@ use SQL::Action::Types;
 
 with 'SQL::Action';
 
-has '_relations' => (
+has 'relations' => (
     traits   => [ 'Hash' ],
-    init_arg => undef,
     is       => 'ro',
     isa      => 'HashRef[SQL::Action::Create]',
     lazy     => 1,
     default  => sub { +{} },
     handles  => {
         create_related => 'set',
-        all_relations => 'elements'
+        all_relations  => 'elements'
     }
 );
 

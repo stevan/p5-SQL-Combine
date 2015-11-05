@@ -36,8 +36,8 @@ isa_ok($dbm, 'SQL::Action::DBH::Manager');
 subtest '... simple insert' => sub {
 
     my $new_person_query = SQL::Action::Create::One->new(
-        schema   => 'user',
-        composer => SQL::Composer::Insert->new(
+        schema => 'user',
+        query  => SQL::Composer::Insert->new(
             into   => 'person',
             values => [
                 id   => 3,
@@ -49,8 +49,8 @@ subtest '... simple insert' => sub {
 
     $new_person_query->create_related(
         comments => SQL::Action::Create::Many->new(
-            schema    => 'comments',
-            composers => sub {
+            schema  => 'comments',
+            queries => sub {
                 my $result = $_[0];
                 return [
                     SQL::Composer::Insert->new(
@@ -85,8 +85,8 @@ subtest '... simple insert' => sub {
     );
 
     my $person_query = SQL::Action::Fetch::One->new(
-        schema   => 'user',
-        composer => SQL::Composer::Select->new(
+        schema => 'user',
+        query  => SQL::Composer::Select->new(
             from    => 'person',
             columns => [qw[ id name age ]],
             where   => [ id => $new_person_info->{id} ]
@@ -95,8 +95,8 @@ subtest '... simple insert' => sub {
 
     $person_query->fetch_related(
         comments => SQL::Action::Fetch::Many->new(
-            schema   => 'comments',
-            composer => SQL::Composer::Select->new(
+            schema => 'comments',
+            query  => SQL::Composer::Select->new(
                 from    => 'comment',
                 columns => [qw[ id body ]],
                 where   => [ author => $new_person_info->{id} ],

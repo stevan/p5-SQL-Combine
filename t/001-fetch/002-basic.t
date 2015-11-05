@@ -31,7 +31,7 @@ subtest '... get article with all relations (raw)' => sub {
     my $ARTICLE_ID = 1;
 
     my $article_query = SQL::Action::Fetch::One->new(
-        composer => SQL::Composer::Select->new(
+        query => SQL::Composer::Select->new(
             from    => 'article',
             columns => [qw[ id title body created updated status approver ]],
             where   => [ id => $ARTICLE_ID ],
@@ -40,7 +40,7 @@ subtest '... get article with all relations (raw)' => sub {
 
     $article_query->fetch_related(
         comments => SQL::Action::Fetch::Many->new(
-            composer => SQL::Composer::Select->new(
+            query => SQL::Composer::Select->new(
                 from    => 'comment',
                 columns => [qw[ id body ]],
                 where   => [ article => $ARTICLE_ID ],
@@ -50,7 +50,7 @@ subtest '... get article with all relations (raw)' => sub {
 
     $article_query->fetch_related(
         approver => SQL::Action::Fetch::One->new(
-            composer => sub {
+            query => sub {
                 my $result = $_[0];
                 SQL::Composer::Select->new(
                     from    => 'person',
@@ -92,7 +92,7 @@ subtest '... get article with approve & approver.comments' => sub {
     my $ARTICLE_ID = 1;
 
     my $article_query = SQL::Action::Fetch::One->new(
-        composer => SQL::Composer::Select->new(
+        query => SQL::Composer::Select->new(
             from    => 'article',
             columns => [qw[ id title body created updated status approver ]],
             where   => [ id => $ARTICLE_ID ],
@@ -100,7 +100,7 @@ subtest '... get article with approve & approver.comments' => sub {
     );
 
     my $approver_query = SQL::Action::Fetch::One->new(
-        composer => sub {
+        query => sub {
             my $result = $_[0];
             SQL::Composer::Select->new(
                 from    => 'person',
@@ -112,7 +112,7 @@ subtest '... get article with approve & approver.comments' => sub {
 
     $approver_query->fetch_related(
         comments => SQL::Action::Fetch::Many->new(
-            composer => sub {
+            query => sub {
                 my $result = $_[0];
                 SQL::Composer::Select->new(
                     from    => 'comment',
@@ -131,7 +131,7 @@ subtest '... get article with approve & approver.comments' => sub {
 
     $article_query->fetch_related(
         comments => SQL::Action::Fetch::Many->new(
-            composer => SQL::Composer::Select->new(
+            query => SQL::Composer::Select->new(
                 from    => 'comment',
                 columns => [qw[ id body ]],
                 where   => [ article => $ARTICLE_ID ],
@@ -173,7 +173,7 @@ subtest '... get article with all relations (raw)' => sub {
     my $ARTICLE_ID = 1;
 
     my $article_query = SQL::Action::Fetch::One->new(
-        composer => SQL::Composer::Select->new(
+        query => SQL::Composer::Select->new(
             from    => 'article',
             columns => [qw[ id title body created updated status ]],
             where   => [ id => $ARTICLE_ID ],
@@ -181,7 +181,7 @@ subtest '... get article with all relations (raw)' => sub {
     );
 
     my $comments_query = SQL::Action::Fetch::Many->new(
-        composer => SQL::Composer::Select->new(
+        query => SQL::Composer::Select->new(
             from    => 'comment',
             columns => [qw[ id body author ]],
             where   => [ article => $ARTICLE_ID ],
@@ -194,7 +194,7 @@ subtest '... get article with all relations (raw)' => sub {
     # - SL
     $comments_query->fetch_related(
         author => SQL::Action::Fetch::One->new(
-            composer => sub {
+            query => sub {
                 my $result = $_[0];
                 SQL::Composer::Select->new(
                     from    => 'person',

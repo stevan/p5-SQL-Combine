@@ -5,7 +5,7 @@ use SQL::Action::Types;
 
 with 'SQL::Action';
 
-has 'composer' => (
+has 'query' => (
     is       => 'ro',
     isa      => 'SQL::Composer::Select | CodeRef',
     required => 1,

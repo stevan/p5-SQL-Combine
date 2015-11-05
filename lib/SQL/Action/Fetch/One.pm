@@ -6,12 +6,12 @@ with 'SQL::Action::Fetch';
 sub execute {
     my ($self, $dbm, $result) = @_;
 
-    my $composer = $self->composer;
-    $composer = $composer->( $result )
-        if ref $composer eq 'CODE';
+    my $query = $self->query;
+    $query = $query->( $result )
+        if ref $query eq 'CODE';
 
-    my $sql  = $composer->to_sql;
-    my @bind = $composer->to_bind;
+    my $sql  = $query->to_sql;
+    my @bind = $query->to_bind;
 
     my $dbh = $dbm->ro( $self->schema );
     my $sth = $dbh->prepare( $sql );
@@ -20,7 +20,7 @@ sub execute {
     my $rows = $sth->fetchall_arrayref;
     return unless @$rows;
 
-    my ($hash) = @{ $composer->from_rows($rows) };
+    my ($hash) = @{ $query->from_rows($rows) };
 
     my %relations = $self->all_relations;
     foreach my $rel ( keys %relations ) {

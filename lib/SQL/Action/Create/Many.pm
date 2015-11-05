@@ -3,7 +3,7 @@ use Moose;
 
 with 'SQL::Action::Create';
 
-has 'composers' => (
+has 'queries' => (
     is       => 'ro',
     isa      => 'ArrayRef[SQL::Composer::Insert] | CodeRef',
     required => 1,
@@ -12,12 +12,12 @@ has 'composers' => (
 sub execute {
     my ($self, $dbm, $result) = @_;
 
-    my $composers = $self->composers;
-    $composers = $composers->( $result )
-        if ref $composers eq 'CODE';
+    my $queries = $self->queries;
+    $queries = $queries->( $result )
+        if ref $queries eq 'CODE';
 
     my @ids;
-    foreach my $composer ( @$composers ) {
+    foreach my $composer ( @$queries ) {
 
         my $sql  = $composer->to_sql;
         my @bind = $composer->to_bind;

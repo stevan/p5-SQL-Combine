@@ -63,8 +63,8 @@ subtest '... get person with all relations (inflated)' => sub {
     my $PERSON_ID = 1;
 
     my $person_query = SQL::Action::Fetch::One->new(
-        schema   => 'user',
-        composer => SQL::Composer::Select->new(
+        schema => 'user',
+        query  => SQL::Composer::Select->new(
             from    => 'person',
             columns => [qw[ id name age ]],
             where   => [ id => $PERSON_ID ]
@@ -77,7 +77,7 @@ subtest '... get person with all relations (inflated)' => sub {
 
     $person_query->fetch_related(
         comments => SQL::Action::Fetch::Many->new(
-            composer => SQL::Composer::Select->new(
+            query => SQL::Composer::Select->new(
                 from    => 'comment',
                 columns => [qw[ id body ]],
                 where   => [ author => $PERSON_ID ],
@@ -91,7 +91,7 @@ subtest '... get person with all relations (inflated)' => sub {
 
     $person_query->fetch_related(
         approvals => SQL::Action::Fetch::Many->new(
-            composer => SQL::Composer::Select->new(
+            query => SQL::Composer::Select->new(
                 from    => 'article',
                 columns => [qw[ id title body created updated status ]],
                 where   => [ approver => $PERSON_ID ],
@@ -144,7 +144,7 @@ subtest '... get person with all relations (raw)' => sub {
     my $PERSON_ID = 1;
 
     my $person_query = SQL::Action::Fetch::One->new(
-        composer => SQL::Composer::Select->new(
+        query => SQL::Composer::Select->new(
             from    => 'person',
             columns => [qw[ id name age ]],
             where   => [ id => $PERSON_ID ]
@@ -153,7 +153,7 @@ subtest '... get person with all relations (raw)' => sub {
 
     $person_query->fetch_related(
         comments => SQL::Action::Fetch::Many->new(
-            composer => SQL::Composer::Select->new(
+            query => SQL::Composer::Select->new(
                 from    => 'comment',
                 columns => [qw[ id body ]],
                 where   => [ author => $PERSON_ID ],
@@ -163,7 +163,7 @@ subtest '... get person with all relations (raw)' => sub {
 
     $person_query->fetch_related(
         approvals => SQL::Action::Fetch::Many->new(
-            composer => SQL::Composer::Select->new(
+            query => SQL::Composer::Select->new(
                 from    => 'article',
                 columns => [qw[ id title body created updated status ]],
                 where   => [ approver => $PERSON_ID ],
