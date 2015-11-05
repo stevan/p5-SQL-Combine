@@ -23,7 +23,7 @@ sub execute {
     my $sth = $dbh->prepare( $sql );
     $sth->execute( @bind );
 
-    my $hash = { rows => $sth->rows || 0E0 };
+    my $hash = { rows => $sth->rows };
 
     my %relations = $self->all_relations;
     foreach my $rel ( keys %relations ) {

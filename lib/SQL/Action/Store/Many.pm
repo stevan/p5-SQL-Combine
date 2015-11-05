@@ -26,7 +26,7 @@ sub execute {
         my $sth = $dbh->prepare( $sql );
         $sth->execute( @bind );
 
-        push @ids => ($sth->rows || 0E0);
+        push @ids => $sth->rows;
     }
 
     my $hash = { rows => \@ids };

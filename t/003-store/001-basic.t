@@ -17,7 +17,6 @@ BEGIN {
     use_ok('SQL::Action::DBH::Manager');
 
     use_ok('SQL::Action::Store::One');
-    #use_ok('SQL::Action::Store::Many');
 
     use_ok('SQL::Action::Fetch::One');
     use_ok('SQL::Action::Fetch::Many');
