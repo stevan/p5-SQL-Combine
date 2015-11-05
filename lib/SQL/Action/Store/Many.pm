@@ -16,7 +16,7 @@ sub execute {
     $queries = $queries->( $result )
         if ref $queries eq 'CODE';
 
-    my @ids;
+    my @rows;
     foreach my $composer ( @$queries ) {
 
         my $sql  = $composer->to_sql;
@@ -26,10 +26,10 @@ sub execute {
         my $sth = $dbh->prepare( $sql );
         $sth->execute( @bind );
 
-        push @ids => $sth->rows;
+        push @rows => $sth->rows;
     }
 
-    my $hash = { rows => \@ids };
+    my $hash = { rows => \@rows };
 
     return $hash;
 }

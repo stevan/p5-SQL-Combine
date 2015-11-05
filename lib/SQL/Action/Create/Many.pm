@@ -17,10 +17,10 @@ sub execute {
         if ref $queries eq 'CODE';
 
     my @ids;
-    foreach my $composer ( @$queries ) {
+    foreach my $query ( @$queries ) {
 
-        my $sql  = $composer->to_sql;
-        my @bind = $composer->to_bind;
+        my $sql  = $query->to_sql;
+        my @bind = $query->to_bind;
 
         my $dbh = $dbm->rw( $self->schema );
         my $sth = $dbh->prepare( $sql );
