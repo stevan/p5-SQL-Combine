@@ -135,11 +135,16 @@ foreach my $i ( 0, 1 ) {
 
         #warn Dumper $new_person_info;
 
-        #is_deeply(
-        #    $new_person_info,
-        #    { id => $PERSON_ID, comments => { ids => [ 5, 6 ] } },
-        #    '... got the expected insert info'
-        #);
+        is_deeply(
+            $new_person_info,
+            {
+                id       => $PERSON_ID,
+                comments => {
+                    ids => [ 5, ($DRIVER =~ m/sqlite/i ? 6 : 1) ]
+                }
+            },
+            '... got the expected insert info'
+        );
 
         my $person_query = SQL::Action::Fetch::One->new(
             schema => 'user',

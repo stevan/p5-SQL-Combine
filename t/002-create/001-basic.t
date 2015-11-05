@@ -77,11 +77,11 @@ foreach my $DBH (Util::setup_database( Util::setup_sqlite_dbh ), Util::setup_dat
 
         my $new_person_info = $new_person_query->execute( $dbm, {} );
 
-        #is_deeply(
-        #    $new_person_info,
-        #    { id => 3, comments => { ids => [ 5, 6 ] } },
-        #    '... got the expected insert info'
-        #);
+        is_deeply(
+            $new_person_info,
+            { id => 3, comments => { ids => [ 5, 6 ] } },
+            '... got the expected insert info'
+        );
 
         my $person_query = SQL::Action::Fetch::One->new(
             schema => 'user',

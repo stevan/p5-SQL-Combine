@@ -26,7 +26,27 @@ sub execute {
         my $sth = $dbh->prepare( $sql );
         $sth->execute( @bind );
 
-        push @ids => $dbh->last_insert_id( undef, undef, undef, undef, {} );
+        my $last_insert_id = $dbh->last_insert_id( undef, undef, undef, undef, {} );
+
+        # FIXME
+        # This has a lot of problems:
+        # 1) it uses the `columns` hash field from the SQL::Composer::Insert
+        # 2) It assumes that the id column is `id` (should be customizable)
+        # 3) We duplicate the same logic in SQL::Action::Create::One
+        # 4) It does not behave the same for Upserts
+        # - SL
+        if ( !$last_insert_id ) {
+            my $found;
+            my $idx = 0;
+            foreach my $column ( @{ $query->{columns} } ) {
+                ($found++, last) if $column eq 'id';
+                $idx++;
+            }
+
+            $last_insert_id = $bind[ $idx ] if $found;
+        }
+
+        push @ids => $last_insert_id;
     }
 
     my $hash = { ids => \@ids };
