@@ -44,6 +44,7 @@ foreach my $i ( 0, 1 ) {
                 from    => 'article',
                 columns => [qw[ id title body created updated status approver ]],
                 where   => [ id => $ARTICLE_ID ],
+                driver  => $DRIVER
             )
         );
 
@@ -53,6 +54,7 @@ foreach my $i ( 0, 1 ) {
                     from    => 'comment',
                     columns => [qw[ id body ]],
                     where   => [ article => $ARTICLE_ID ],
+                    driver  => $DRIVER
                 )
             )
         );
@@ -65,6 +67,7 @@ foreach my $i ( 0, 1 ) {
                         from    => 'person',
                         columns => [qw[ id name age ]],
                         where   => [ id => $result->{approver} ],
+                        driver  => $DRIVER
                     )
                 }
             )
@@ -105,6 +108,7 @@ foreach my $i ( 0, 1 ) {
                 from    => 'article',
                 columns => [qw[ id title body created updated status approver ]],
                 where   => [ id => $ARTICLE_ID ],
+                driver  => $DRIVER
             )
         );
 
@@ -115,6 +119,7 @@ foreach my $i ( 0, 1 ) {
                     from    => 'person',
                     columns => [qw[ id name age ]],
                     where   => [ id => $result->{approver} ],
+                    driver  => $DRIVER
                 )
             }
         );
@@ -127,6 +132,7 @@ foreach my $i ( 0, 1 ) {
                         from    => 'comment',
                         columns => [qw[ id ]],
                         where   => [ author => $result->{id}, article => $ARTICLE_ID ],
+                        driver  => $DRIVER
                     )
                 }
             )
@@ -144,6 +150,7 @@ foreach my $i ( 0, 1 ) {
                     from    => 'comment',
                     columns => [qw[ id body ]],
                     where   => [ article => $ARTICLE_ID ],
+                    driver  => $DRIVER
                 )
             )
         );
@@ -186,6 +193,7 @@ foreach my $i ( 0, 1 ) {
                 from    => 'article',
                 columns => [qw[ id title body created updated status ]],
                 where   => [ id => $ARTICLE_ID ],
+                driver  => $DRIVER
             )
         );
 
@@ -194,6 +202,7 @@ foreach my $i ( 0, 1 ) {
                 from    => 'comment',
                 columns => [qw[ id body author ]],
                 where   => [ article => $ARTICLE_ID ],
+                driver  => $DRIVER
             )
         );
 
@@ -209,6 +218,7 @@ foreach my $i ( 0, 1 ) {
                         from    => 'person',
                         columns => [qw[ id name age ]],
                         where   => [ id => $result->{author} ],
+                        driver  => $DRIVER
                     )
                 }
             )

@@ -54,7 +54,8 @@ foreach my $i ( 0, 1 ) {
                     id   => $PERSON_ID,
                     name => 'Jim',
                     age  => 25
-                ]
+                ],
+                driver => $DRIVER
             )
         );
 
@@ -69,7 +70,8 @@ foreach my $i ( 0, 1 ) {
                             body     => 'Wassup!',
                             article  => 1,
                             author   => $PERSON_ID
-                        ]
+                        ],
+                        driver => $DRIVER
                     ),
                     SQL::Composer::Insert->new(
                         into   => 'comment',
@@ -78,7 +80,8 @@ foreach my $i ( 0, 1 ) {
                             body     => 'DOH!',
                             article  => 1,
                             author   => $PERSON_ID
-                        ]
+                        ],
+                        driver => $DRIVER
                     ),
                 ]
             )
@@ -97,7 +100,8 @@ foreach my $i ( 0, 1 ) {
             query  => SQL::Composer::Select->new(
                 from    => 'person',
                 columns => [qw[ id name age ]],
-                where   => [ id => $PERSON_ID ]
+                where   => [ id => $PERSON_ID ],
+                driver  => $DRIVER
             )
         );
 
@@ -108,6 +112,7 @@ foreach my $i ( 0, 1 ) {
                     from    => 'comment',
                     columns => [qw[ id body ]],
                     where   => [ author => $PERSON_ID ],
+                    driver  => $DRIVER
                 )
             )
         );

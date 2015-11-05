@@ -52,7 +52,8 @@ foreach my $i ( 0, 1 ) {
             query  => SQL::Composer::Update->new(
                 table  => 'person',
                 values => [ age  => 25 ],
-                where  => [ id => $PERSON_ID ]
+                where  => [ id => $PERSON_ID ],
+                driver => $DRIVER
             )
         );
 
@@ -64,11 +65,13 @@ foreach my $i ( 0, 1 ) {
                         table  => 'comment',
                         values => [ body   => '[REDACTED]' ],
                         where  => [ author => $PERSON_ID, body => 'Yo!' ],
+                        driver => $DRIVER
                     ),
                     SQL::Composer::Update->new(
                         table  => 'comment',
                         values => [ body   => 'Yo! [CITATION NEEDED]' ],
                         where  => [ author => $PERSON_ID, body => 'Yo! (again)' ],
+                        driver => $DRIVER
                     )
                 ]
             )
@@ -87,7 +90,8 @@ foreach my $i ( 0, 1 ) {
             query  => SQL::Composer::Select->new(
                 from    => 'person',
                 columns => [qw[ id name age ]],
-                where   => [ id => $PERSON_ID ]
+                where   => [ id => $PERSON_ID ],
+                driver  => $DRIVER
             )
         );
 
@@ -98,6 +102,7 @@ foreach my $i ( 0, 1 ) {
                     from    => 'comment',
                     columns => [qw[ body ]],
                     where   => [ author => $PERSON_ID ],
+                    driver  => $DRIVER
                 )
             )
         );
