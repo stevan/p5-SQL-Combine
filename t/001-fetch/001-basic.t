@@ -48,7 +48,18 @@ package Article {
     has 'status'  => (is => 'ro', isa => 'Str' );
 }
 
-foreach my $DBH (Util::setup_database( Util::setup_sqlite_dbh ), Util::setup_database( Util::setup_mysql_dbh )) {
+
+my @DRIVERS = ('sqlite', 'mysql');
+my @DBHS    = (
+    Util::setup_database( Util::setup_sqlite_dbh ),
+    Util::setup_database( Util::setup_mysql_dbh )
+);
+
+foreach my $i ( 0, 1 ) {
+
+    my $DRIVER = $DRIVERS[ $i ];
+    my $DBH    = $DBHS[ $i ];
+
     my $dbm = SQL::Action::DBH::Manager->new(
         schemas => {
             user        => { ro => $DBH },
