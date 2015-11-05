@@ -24,7 +24,8 @@ BEGIN {
     use_ok('SQL::Action::Fetch::Many');
 }
 
-my $DBH = Util::setup_dbh;
+my $DBH        = Util::setup_dbh;
+my $ARTICLE_ID = 1;
 
 my $dbm = SQL::Action::DBH::Manager->new(
     schemas => {
@@ -35,7 +36,46 @@ my $dbm = SQL::Action::DBH::Manager->new(
 );
 isa_ok($dbm, 'SQL::Action::DBH::Manager');
 
-subtest '... simple insert' => sub {
+my $article_query = SQL::Action::Fetch::One->new(
+    schema => 'articles',
+    query  => SQL::Composer::Select->new(
+        from    => 'article',
+        columns => [qw[ id title body ]],
+        where   => [ id => $ARTICLE_ID ]
+    )
+);
+isa_ok($article_query, 'SQL::Action::Fetch::One');
+
+$article_query->fetch_related(
+    comments => SQL::Action::Fetch::Many->new(
+        schema => 'comments',
+        query  => SQL::Composer::Select->new(
+            from     => 'comment',
+            columns  => [qw[ id body author ]],
+            where    => [ article => $ARTICLE_ID ],
+        )
+    )
+);
+
+subtest '... test some article stuff (before change)' => sub {
+    my $article = $article_query->execute( $dbm, {} );
+
+    is_deeply(
+        $article,
+        {
+            id       => 1,
+            title    => 'Title(1)',
+            body     => 'Body(1)',
+            comments => [
+                { id => 1, author => 1, body => 'Yo!' },
+                { id => 2, author => 2, body => 'Hey!' },
+            ]
+        },
+        '... got the expected set of (changed) data'
+    );
+};
+
+subtest '... simple insert with upsert' => sub {
 
     my $new_person_query = SQL::Action::Create::One->new(
         schema => 'user',
@@ -60,7 +100,7 @@ subtest '... simple insert' => sub {
                         values => [
                             id       => 5,
                             body     => 'Wassup!',
-                            article  => 1,
+                            article  => $ARTICLE_ID,
                             author   => $result->{id}
                         ]
                     ),
@@ -69,7 +109,7 @@ subtest '... simple insert' => sub {
                         values => [
                             id       => 1,
                             body     => 'DOH!',
-                            article  => 1,
+                            article  => $ARTICLE_ID,
                             author   => $result->{id}
                         ],
                         driver => 'SQLite'
@@ -130,6 +170,25 @@ subtest '... simple insert' => sub {
         '... got the selected data as expected'
     );
 
+};
+
+subtest '... test some article stuff (after change)' => sub {
+    my $article = $article_query->execute( $dbm, {} );
+
+    is_deeply(
+        $article,
+        {
+            id       => 1,
+            title    => 'Title(1)',
+            body     => 'Body(1)',
+            comments => [
+                { id => 1, author => 3, body => 'DOH!' },
+                { id => 2, author => 2, body => 'Hey!' },
+                { id => 5, author => 3, body => 'Wassup!' },
+            ]
+        },
+        '... got the expected set of (changed) data'
+    );
 };
 
 done_testing;
