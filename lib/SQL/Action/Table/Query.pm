@@ -1,4 +1,4 @@
-package SQL::Action::Table::Op;
+package SQL::Action::Table::Query;
 use Moose::Role;
 
 has 'table' => (

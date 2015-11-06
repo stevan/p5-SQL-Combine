@@ -2,12 +2,13 @@ package SQL::Action::Create::One;
 use Moose;
 
 use SQL::Action::Table::Insert;
+use SQL::Action::Table::Upsert;
 
 with 'SQL::Action::Create';
 
 has 'query' => (
     is       => 'ro',
-    isa      => 'SQL::Action::Table::Op | CodeRef',
+    isa      => 'SQL::Action::Table::Insert | SQL::Action::Table::Upsert | SQL::Action::Table::Update | CodeRef',
     required => 1,
 );
 

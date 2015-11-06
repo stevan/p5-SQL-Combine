@@ -2,12 +2,14 @@ package SQL::Action::Create::Many;
 use Moose;
 
 use SQL::Action::Table::Insert;
+use SQL::Action::Table::Upsert;
+use SQL::Action::Table::Update;
 
 with 'SQL::Action::Create';
 
 has 'queries' => (
     is       => 'ro',
-    isa      => 'ArrayRef[SQL::Action::Table::Op] | CodeRef',
+    isa      => 'ArrayRef[ SQL::Action::Table::Insert | SQL::Action::Table::Upsert | SQL::Action::Table::Update ] | CodeRef',
     required => 1,
 );
 

@@ -3,7 +3,7 @@ use Moose;
 
 use SQL::Composer::Select;
 
-with 'SQL::Action::Table::Op';
+with 'SQL::Action::Table::Query';
 
 has '_composer' => (
     is      => 'rw',
