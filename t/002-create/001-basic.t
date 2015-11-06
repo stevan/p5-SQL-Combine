@@ -92,6 +92,8 @@ foreach my $i ( 0, 1 ) {
 
         my $new_person_info = $new_person_query->execute( $dbm, {} );
 
+        #warn Dumper $new_person_info;
+
         is_deeply(
             $new_person_info,
             { id => 3, comments => { ids => [ 5, 6 ] } },

@@ -25,22 +25,9 @@ sub execute {
     my $sth = $dbh->prepare( $sql );
     $sth->execute( @bind );
 
-    my $last_insert_id = $dbh->last_insert_id( undef, undef, undef, undef, {} );
-
-    # FIXME
-    # This has a lot of problems:
-    # 1) We duplicate the same logic in SQL::Action::Create::Many (see that for more info)
-    # - SL
-    if ( !$last_insert_id ) {
-        my $found;
-        my $idx = 0;
-        foreach my $column ( @{ $query->_composer->{columns} } ) {
-            ($found++, last) if $column eq 'id';
-            $idx++;
-        }
-
-        $last_insert_id = $bind[ $idx ] if $found;
-    }
+    my $last_insert_id = $query->has_insert_id
+        ? $query->insert_id
+        : $dbh->last_insert_id( undef, undef, undef, undef, {} );
 
     my $hash = { id => $last_insert_id };
 

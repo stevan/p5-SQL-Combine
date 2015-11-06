@@ -15,8 +15,22 @@ has '_composer' => (
     ]]
 );
 
+has 'primary_key' => ( is => 'ro', isa => 'Str', default => 'id' );
+has 'insert_id'   => (
+    is        => 'ro',
+    isa       => 'Num',
+    predicate => 'has_insert_id',
+    writer    => 'set_insert_id',
+);
+
 sub BUILD {
     my ($self, $params) = @_;
+
+    my %values = @{ $params->{values} };
+    if ( my $id = $values{ $self->primary_key } ) {
+        $self->set_insert_id( $id );
+    }
+
     $self->_composer(
         SQL::Composer::Upsert->new(
             driver => $self->table->driver,

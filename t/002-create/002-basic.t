@@ -146,7 +146,7 @@ foreach my $i ( 0, 1 ) {
             {
                 id       => $PERSON_ID,
                 comments => {
-                    ids => [ 5, ($DRIVER =~ m/sqlite/i ? 6 : 1) ]
+                    ids => [ 5, 1 ]
                 }
             },
             '... got the expected insert info'
