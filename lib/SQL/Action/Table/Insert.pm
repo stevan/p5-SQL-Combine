@@ -19,9 +19,10 @@ sub BUILD {
     my ($self, $params) = @_;
     $self->_composer(
         SQL::Composer::Insert->new(
-            %{$params},
-            into   => $self->table->name,
             driver => $self->table->driver,
+            into   => $self->table->name,
+
+            values => $params->{values},
         )
     );
 }

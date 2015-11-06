@@ -19,9 +19,22 @@ sub BUILD {
     my ($self, $params) = @_;
     $self->_composer(
         SQL::Composer::Select->new(
-            %{$params},
-            from   => $self->table->name,
-            driver => $self->table->driver,
+            driver     => $self->table->driver,
+            from       => $self->table->name,
+            join       => $params->{join},
+
+            columns    => $params->{columns},
+
+            where      => $params->{where},
+
+            group_by   => $params->{group_by},
+            having     => $params->{having},
+            order_by   => $params->{order_by},
+
+            limit      => $params->{limit},
+            offset     => $params->{offset},
+
+            for_update => $params->{for_update},
         )
     );
 }

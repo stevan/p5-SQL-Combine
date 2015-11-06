@@ -19,9 +19,16 @@ sub BUILD {
     my ($self, $params) = @_;
     $self->_composer(
         SQL::Composer::Update->new(
-            %{$params},
-            table  => $self->table->name,
             driver => $self->table->driver,
+            table  => $self->table->name,
+
+            values => $params->{values},
+            set    => $params->{set},
+
+            where  => $params->{where},
+
+            limit  => $params->{limit},
+            offset => $params->{offset},
         )
     );
 }
