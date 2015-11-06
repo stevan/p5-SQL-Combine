@@ -15,8 +15,31 @@ has '_composer' => (
     ]]
 );
 
+has 'primary_key' => ( is => 'ro', isa => 'Str', default => 'id' );
+has 'insert_id'   => (
+    is        => 'ro',
+    isa       => 'Num',
+    predicate => 'has_insert_id',
+    writer    => 'set_insert_id',
+);
+
 sub BUILD {
     my ($self, $params) = @_;
+
+    my $primary_key = $self->primary_key;
+
+    my $values = $params->{values} || $params->{set};
+    my %values = ref $values eq 'HASH' ? %$values : @$values;
+    if ( my $id = $values{ $primary_key } ) {
+        $self->set_insert_id( $id );
+    }
+    else {
+        my %where = ref $params->{where} eq 'HASH' ? %{ $params->{where} } : @{ $params->{where} };
+        if ( my $id = $where{ $primary_key } ) {
+            $self->set_insert_id( $id );
+        }
+    }
+
     $self->_composer(
         SQL::Composer::Update->new(
             driver => $self->table->driver,
