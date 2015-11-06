@@ -26,7 +26,7 @@ has 'insert_id'   => (
 sub BUILD {
     my ($self, $params) = @_;
 
-    my %values = @{ $params->{values} };
+    my %values = ref $params->{values} eq 'HASH' ? %{ $params->{values} } : @{ $params->{values} };
     if ( my $id = $values{ $self->primary_key } ) {
         $self->set_insert_id( $id );
     }
