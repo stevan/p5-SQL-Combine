@@ -13,7 +13,7 @@ sub execute {
     my $sql  = $query->to_sql;
     my @bind = $query->to_bind;
 
-    my $dbh = $dbm->ro( $self->schema );
+    my $dbh = $dbm->ro( $query->table->schema );
     my $sth = $dbh->prepare( $sql );
     $sth->execute( @bind );
 

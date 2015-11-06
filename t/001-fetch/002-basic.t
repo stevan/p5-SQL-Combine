@@ -11,9 +11,9 @@ use Data::Dumper;
 use Test::More;
 
 BEGIN {
-    use_ok('SQL::Composer::Select');
-
     use_ok('SQL::Action::DBH::Manager');
+
+    use_ok('SQL::Action::Table');
 
     use_ok('SQL::Action::Fetch::One');
     use_ok('SQL::Action::Fetch::Many');
@@ -35,26 +35,37 @@ foreach my $i ( 0, 1 ) {
     );
     isa_ok($dbm, 'SQL::Action::DBH::Manager');
 
+    my $Person = SQL::Action::Table->new(
+        name   => 'person',
+        driver => $DRIVER,
+    );
+
+    my $Comment = SQL::Action::Table->new(
+        name   => 'comment',
+        driver => $DRIVER,
+    );
+
+    my $Article = SQL::Action::Table->new(
+        name   => 'article',
+        driver => $DRIVER,
+    );
+
     subtest '... get article with all relations (raw)' => sub {
 
         my $ARTICLE_ID = 1;
 
         my $article_query = SQL::Action::Fetch::One->new(
-            query => SQL::Composer::Select->new(
-                from    => 'article',
+            query => $Article->select(
                 columns => [qw[ id title body created updated status approver ]],
                 where   => [ id => $ARTICLE_ID ],
-                driver  => $DRIVER
             )
         );
 
         $article_query->fetch_related(
             comments => SQL::Action::Fetch::Many->new(
-                query => SQL::Composer::Select->new(
-                    from    => 'comment',
+                query => $Comment->select(
                     columns => [qw[ id body ]],
                     where   => [ article => $ARTICLE_ID ],
-                    driver  => $DRIVER
                 )
             )
         );
@@ -63,11 +74,9 @@ foreach my $i ( 0, 1 ) {
             approver => SQL::Action::Fetch::One->new(
                 query => sub {
                     my $result = $_[0];
-                    SQL::Composer::Select->new(
-                        from    => 'person',
+                    $Person->select(
                         columns => [qw[ id name age ]],
                         where   => [ id => $result->{approver} ],
-                        driver  => $DRIVER
                     )
                 }
             )
@@ -104,22 +113,18 @@ foreach my $i ( 0, 1 ) {
         my $ARTICLE_ID = 1;
 
         my $article_query = SQL::Action::Fetch::One->new(
-            query => SQL::Composer::Select->new(
-                from    => 'article',
+            query => $Article->select(
                 columns => [qw[ id title body created updated status approver ]],
                 where   => [ id => $ARTICLE_ID ],
-                driver  => $DRIVER
             )
         );
 
         my $approver_query = SQL::Action::Fetch::One->new(
             query => sub {
                 my $result = $_[0];
-                SQL::Composer::Select->new(
-                    from    => 'person',
+                $Person->select(
                     columns => [qw[ id name age ]],
                     where   => [ id => $result->{approver} ],
-                    driver  => $DRIVER
                 )
             }
         );
@@ -128,11 +133,9 @@ foreach my $i ( 0, 1 ) {
             comments => SQL::Action::Fetch::Many->new(
                 query => sub {
                     my $result = $_[0];
-                    SQL::Composer::Select->new(
-                        from    => 'comment',
+                    $Comment->select(
                         columns => [qw[ id ]],
                         where   => [ author => $result->{id}, article => $ARTICLE_ID ],
-                        driver  => $DRIVER
                     )
                 }
             )
@@ -146,11 +149,9 @@ foreach my $i ( 0, 1 ) {
 
         $article_query->fetch_related(
             comments => SQL::Action::Fetch::Many->new(
-                query => SQL::Composer::Select->new(
-                    from    => 'comment',
+                query => $Comment->select(
                     columns => [qw[ id body ]],
                     where   => [ article => $ARTICLE_ID ],
-                    driver  => $DRIVER
                 )
             )
         );
@@ -189,20 +190,16 @@ foreach my $i ( 0, 1 ) {
         my $ARTICLE_ID = 1;
 
         my $article_query = SQL::Action::Fetch::One->new(
-            query => SQL::Composer::Select->new(
-                from    => 'article',
+            query => $Article->select(
                 columns => [qw[ id title body created updated status ]],
                 where   => [ id => $ARTICLE_ID ],
-                driver  => $DRIVER
             )
         );
 
         my $comments_query = SQL::Action::Fetch::Many->new(
-            query => SQL::Composer::Select->new(
-                from    => 'comment',
+            query => $Comment->select(
                 columns => [qw[ id body author ]],
                 where   => [ article => $ARTICLE_ID ],
-                driver  => $DRIVER
             )
         );
 
@@ -214,11 +211,9 @@ foreach my $i ( 0, 1 ) {
             author => SQL::Action::Fetch::One->new(
                 query => sub {
                     my $result = $_[0];
-                    SQL::Composer::Select->new(
-                        from    => 'person',
+                    $Person->select(
                         columns => [qw[ id name age ]],
                         where   => [ id => $result->{author} ],
-                        driver  => $DRIVER
                     )
                 }
             )

@@ -1,8 +1,6 @@
 package SQL::Action::Store;
 use Moose::Role;
 
-use SQL::Action::Types;
-
 with 'SQL::Action';
 
 has 'relations' => (

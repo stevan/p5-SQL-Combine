@@ -11,9 +11,9 @@ use Data::Dumper;
 use Test::More;
 
 BEGIN {
-    use_ok('SQL::Composer::Select');
-
     use_ok('SQL::Action::DBH::Manager');
+
+    use_ok('SQL::Action::Table');
 
     use_ok('SQL::Action::Fetch::One');
     use_ok('SQL::Action::Fetch::Many');
@@ -68,17 +68,30 @@ foreach my $i ( 0, 1 ) {
     );
     isa_ok($dbm, 'SQL::Action::DBH::Manager');
 
+    my $Person = SQL::Action::Table->new(
+        schema => 'user',
+        name   => 'person',
+        driver => $DRIVER,
+    );
+
+    my $Comment = SQL::Action::Table->new(
+        name   => 'comment',
+        driver => $DRIVER,
+    );
+
+    my $Article = SQL::Action::Table->new(
+        name   => 'article',
+        driver => $DRIVER,
+    );
+
     subtest '... get person with all relations (inflated)' => sub {
 
         my $PERSON_ID = 1;
 
         my $person_query = SQL::Action::Fetch::One->new(
-            schema => 'user',
-            query  => SQL::Composer::Select->new(
-                from    => 'person',
+            query  => $Person->select(
                 columns => [qw[ id name age ]],
                 where   => [ id => $PERSON_ID ],
-                driver  => $DRIVER
             ),
             inflator => sub {
                 my $row = $_[0];
@@ -88,11 +101,9 @@ foreach my $i ( 0, 1 ) {
 
         $person_query->fetch_related(
             comments => SQL::Action::Fetch::Many->new(
-                query => SQL::Composer::Select->new(
-                    from    => 'comment',
+                query => $Comment->select(
                     columns => [qw[ id body ]],
                     where   => [ author => $PERSON_ID ],
-                    driver  => $DRIVER
                 ),
                 inflator => sub {
                     my $rows = $_[0];
@@ -103,11 +114,9 @@ foreach my $i ( 0, 1 ) {
 
         $person_query->fetch_related(
             approvals => SQL::Action::Fetch::Many->new(
-                query => SQL::Composer::Select->new(
-                    from    => 'article',
+                query => $Article->select(
                     columns => [qw[ id title body created updated status ]],
                     where   => [ approver => $PERSON_ID ],
-                    driver  => $DRIVER
                 ),
                 inflator => sub {
                     my $rows = $_[0];
@@ -157,32 +166,26 @@ foreach my $i ( 0, 1 ) {
         my $PERSON_ID = 1;
 
         my $person_query = SQL::Action::Fetch::One->new(
-            query => SQL::Composer::Select->new(
-                from    => 'person',
+            query => $Person->select(
                 columns => [qw[ id name age ]],
                 where   => [ id => $PERSON_ID ],
-                driver  => $DRIVER
             )
         );
 
         $person_query->fetch_related(
             comments => SQL::Action::Fetch::Many->new(
-                query => SQL::Composer::Select->new(
-                    from    => 'comment',
+                query => $Comment->select(
                     columns => [qw[ id body ]],
                     where   => [ author => $PERSON_ID ],
-                    driver  => $DRIVER
                 )
             )
         );
 
         $person_query->fetch_related(
             approvals => SQL::Action::Fetch::Many->new(
-                query => SQL::Composer::Select->new(
-                    from    => 'article',
+                query => $Article->select(
                     columns => [qw[ id title body created updated status ]],
                     where   => [ approver => $PERSON_ID ],
-                    driver  => $DRIVER
                 )
             )
         );

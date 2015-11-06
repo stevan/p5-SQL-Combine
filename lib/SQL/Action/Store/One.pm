@@ -5,7 +5,7 @@ with 'SQL::Action::Store';
 
 has 'query' => (
     is       => 'ro',
-    isa      => 'SQL::Composer::Update | CodeRef',
+    isa      => 'SQL::Action::Table::Update | CodeRef',
     required => 1,
 );
 
@@ -19,7 +19,7 @@ sub execute {
     my $sql  = $query->to_sql;
     my @bind = $query->to_bind;
 
-    my $dbh = $dbm->rw( $self->schema );
+    my $dbh = $dbm->rw( $query->table->schema );
     my $sth = $dbh->prepare( $sql );
     $sth->execute( @bind );
 

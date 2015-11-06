@@ -1,13 +1,13 @@
 package SQL::Action::Fetch;
 use Moose::Role;
 
-use SQL::Action::Types;
+use SQL::Action::Table::Select;
 
 with 'SQL::Action';
 
 has 'query' => (
     is       => 'ro',
-    isa      => 'SQL::Composer::Select | CodeRef',
+    isa      => 'SQL::Action::Table::Select | CodeRef',
     required => 1,
 );
 

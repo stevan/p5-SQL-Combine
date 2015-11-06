@@ -11,10 +11,9 @@ use Data::Dumper;
 use Test::More;
 
 BEGIN {
-    use_ok('SQL::Composer::Insert');
-    use_ok('SQL::Composer::Select');
-
     use_ok('SQL::Action::DBH::Manager');
+
+    use_ok('SQL::Action::Table');
 
     use_ok('SQL::Action::Create::One');
     use_ok('SQL::Action::Create::Many');
@@ -42,46 +41,50 @@ foreach my $i ( 0, 1 ) {
     );
     isa_ok($dbm, 'SQL::Action::DBH::Manager');
 
+    my $Person = SQL::Action::Table->new(
+        schema => 'user',
+        name   => 'person',
+        driver => $DRIVER,
+    );
+
+    my $Comment = SQL::Action::Table->new(
+        schema => 'comments',
+        name   => 'comment',
+        driver => $DRIVER,
+    );
+
     subtest '... simple insert' => sub {
 
         my $PERSON_ID = 3;
 
         my $new_person_query = SQL::Action::Create::One->new(
-            schema => 'user',
-            query  => SQL::Composer::Insert->new(
-                into   => 'person',
+            query  => $Person->insert(
                 values => [
                     id   => $PERSON_ID,
                     name => 'Jim',
                     age  => 25
                 ],
-                driver => $DRIVER
             )
         );
 
         $new_person_query->create_related(
             comments => SQL::Action::Create::Many->new(
-                schema  => 'comments',
                 queries => [
-                    SQL::Composer::Insert->new(
-                        into   => 'comment',
+                    $Comment->insert(
                         values => [
                             id       => 5,
                             body     => 'Wassup!',
                             article  => 1,
                             author   => $PERSON_ID
-                        ],
-                        driver => $DRIVER
+                        ]
                     ),
-                    SQL::Composer::Insert->new(
-                        into   => 'comment',
+                    $Comment->insert(
                         values => [
                             id       => 6,
                             body     => 'DOH!',
                             article  => 1,
                             author   => $PERSON_ID
-                        ],
-                        driver => $DRIVER
+                        ]
                     ),
                 ]
             )
@@ -96,23 +99,17 @@ foreach my $i ( 0, 1 ) {
         );
 
         my $person_query = SQL::Action::Fetch::One->new(
-            schema => 'user',
-            query  => SQL::Composer::Select->new(
-                from    => 'person',
+            query  => $Person->select(
                 columns => [qw[ id name age ]],
                 where   => [ id => $PERSON_ID ],
-                driver  => $DRIVER
             )
         );
 
         $person_query->fetch_related(
             comments => SQL::Action::Fetch::Many->new(
-                schema => 'comments',
-                query  => SQL::Composer::Select->new(
-                    from    => 'comment',
+                query  => $Comment->select(
                     columns => [qw[ id body ]],
                     where   => [ author => $PERSON_ID ],
-                    driver  => $DRIVER
                 )
             )
         );

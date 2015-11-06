@@ -1,11 +1,13 @@
 package SQL::Action::Store::Many;
 use Moose;
 
+use SQL::Action::Table::Update;
+
 with 'SQL::Action::Store';
 
 has 'queries' => (
     is       => 'ro',
-    isa      => 'ArrayRef[SQL::Composer::Update] | CodeRef',
+    isa      => 'ArrayRef[SQL::Action::Table::Update] | CodeRef',
     required => 1,
 );
 
@@ -17,12 +19,12 @@ sub execute {
         if ref $queries eq 'CODE';
 
     my @rows;
-    foreach my $composer ( @$queries ) {
+    foreach my $query ( @$queries ) {
 
-        my $sql  = $composer->to_sql;
-        my @bind = $composer->to_bind;
+        my $sql  = $query->to_sql;
+        my @bind = $query->to_bind;
 
-        my $dbh = $dbm->rw( $self->schema );
+        my $dbh = $dbm->rw( $query->table->schema );
         my $sth = $dbh->prepare( $sql );
         $sth->execute( @bind );
 

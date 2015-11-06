@@ -11,10 +11,9 @@ use Data::Dumper;
 use Test::More;
 
 BEGIN {
-    use_ok('SQL::Composer::Update');
-    use_ok('SQL::Composer::Select');
-
     use_ok('SQL::Action::DBH::Manager');
+
+    use_ok('SQL::Action::Table');
 
     use_ok('SQL::Action::Store::One');
 
@@ -42,28 +41,34 @@ foreach my $i ( 0, 1 ) {
     );
     isa_ok($dbm, 'SQL::Action::DBH::Manager');
 
+    my $Person = SQL::Action::Table->new(
+        schema => 'user',
+        name   => 'person',
+        driver => $DRIVER,
+    );
+
+    my $Comment = SQL::Action::Table->new(
+        schema => 'comments',
+        name   => 'comment',
+        driver => $DRIVER,
+    );
+
     subtest '... simple insert' => sub {
 
         my $PERSON_ID = 1;
 
         my $new_person_query = SQL::Action::Store::One->new(
-            schema => 'user',
-            query  => SQL::Composer::Update->new(
-                table  => 'person',
+            query  => $Person->update(
                 values => [ age  => 25 ],
                 where  => [ id => $PERSON_ID ],
-                driver => $DRIVER
             )
         );
 
         $new_person_query->store_related(
             comments => SQL::Action::Store::One->new(
-                schema => 'comments',
-                query  => SQL::Composer::Update->new(
-                    table  => 'comment',
+                query  => $Comment->update(
                     values => [ body   => '[REDACTED]' ],
                     where  => [ author => $PERSON_ID, body => 'Yo!' ],
-                    driver => $DRIVER
                 )
             )
         );
@@ -78,22 +83,17 @@ foreach my $i ( 0, 1 ) {
 
         my $person_query = SQL::Action::Fetch::One->new(
             schema => 'user',
-            query  => SQL::Composer::Select->new(
-                from    => 'person',
+            query  => $Person->select(
                 columns => [qw[ id name age ]],
                 where   => [ id => $PERSON_ID ],
-                driver  => $DRIVER
             )
         );
 
         $person_query->fetch_related(
             comments => SQL::Action::Fetch::Many->new(
-                schema => 'comments',
-                query  => SQL::Composer::Select->new(
-                    from    => 'comment',
+                query  => $Comment->select(
                     columns => [qw[ body ]],
                     where   => [ author => $PERSON_ID ],
-                    driver  => $DRIVER
                 )
             )
         );
