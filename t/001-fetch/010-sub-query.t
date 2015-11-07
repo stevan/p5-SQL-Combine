@@ -17,6 +17,7 @@ BEGIN {
 
     use_ok('SQL::Action::Fetch::One');
     use_ok('SQL::Action::Fetch::Many');
+    use_ok('SQL::Action::Fetch::Many::XRef');
 }
 
 my @DRIVERS = ('sqlite', 'mysql');
@@ -49,6 +50,11 @@ foreach my $i ( 0, 1 ) {
 
     my $Article = SQL::Action::Table->new(
         name   => 'article',
+        driver => $DRIVER,
+    );
+
+    my $Article2Person = SQL::Action::Table->new(
+        name   => 'xref_article_author',
         driver => $DRIVER,
     );
 
@@ -170,6 +176,56 @@ foreach my $i ( 0, 1 ) {
                 { id => 2, body => 'Hey!' }
             ],
             '... got the comments expected'
+        );
+
+    };
+
+    subtest '... get article including an x-ref table' => sub {
+
+        my $ARTICLE_ID = 1;
+
+        my $article_query = SQL::Action::Fetch::One->new(
+            query => $Article->select(
+                columns => [qw[ id title body created updated status approver ]],
+                where   => [ id => $ARTICLE_ID ],
+            )
+        );
+
+        $article_query->fetch_related(
+            authors => SQL::Action::Fetch::Many::XRef->new(
+                xref_query => $Article2Person->select(
+                    columns => [qw[ author ]],
+                    where   => [ article => $ARTICLE_ID ],
+                ),
+                query => sub {
+                    my $results = $_[0];
+                    $Person->select(
+                        columns => [qw[ id name age ]],
+                        where   => [ id => [ map { $_->{author} } @$results ] ]
+                    )
+                }
+            )
+        );
+
+        my $authors = $article_query->relations->{authors}->execute( $dbm, {} );
+
+        #warn Dumper $article;
+
+        is_deeply(
+            $authors,
+            [
+                {
+                    id   => 1,
+                    name => 'Bob',
+                    age  => 30
+                },
+                {
+                    id   => 2,
+                    name => 'Alice',
+                    age  => 32
+                }
+            ],
+            '... got the uninflated stuff as expected'
         );
 
     };
