@@ -198,8 +198,9 @@ foreach my $i ( 0, 1 ) {
 
         my $comments_query = SQL::Action::Fetch::Many->new(
             query => $Comment->select(
-                columns => [qw[ id body author ]],
-                where   => [ article => $ARTICLE_ID ],
+                columns  => [qw[ id body author ]],
+                where    => [ article => $ARTICLE_ID ],
+                order_by => 'id'
             )
         );
 
