@@ -52,7 +52,7 @@ foreach my $i ( 0, 1 ) {
         driver => $DRIVER,
     );
 
-    subtest '... get person with all relations (raw)' => sub {
+    subtest '... get person with comments and approvals' => sub {
 
         my $PERSON_ID = 1;
 
@@ -117,6 +117,63 @@ foreach my $i ( 0, 1 ) {
         );
 
     };
+
+    subtest '... get article with comments and approver' => sub {
+
+        my $ARTICLE_ID = 1;
+
+        my $article_query = SQL::Action::Fetch::One->new(
+            query => $Article->select(
+                columns => [qw[ id title body created updated status approver ]],
+                where   => [ id => $ARTICLE_ID ],
+            )
+        );
+
+        $article_query->fetch_related(
+            comments => SQL::Action::Fetch::Many->new(
+                query => $Comment->select(
+                    columns => [qw[ id body ]],
+                    where   => [ article => $ARTICLE_ID ],
+                )
+            )
+        );
+
+        $article_query->fetch_related(
+            approver => SQL::Action::Fetch::One->new(
+                query => sub {
+                    my $result = $_[0];
+                    $Person->select(
+                        columns => [qw[ id name age ]],
+                        where   => [ id => $result->{approver} ],
+                    )
+                }
+            )
+        );
+
+        my $approver = $article_query->relations->{approver}->execute( $dbm, { approver => 1 } );
+        my $comments = $article_query->relations->{comments}->execute( $dbm, {} );
+
+        is_deeply(
+            $approver,
+            {
+                id   => 1,
+                name => 'Bob',
+                age  => 30
+            },
+            '... got the approver expected'
+        );
+
+        is_deeply(
+            $comments,
+            [
+                { id => 1, body => 'Yo!' },
+                { id => 2, body => 'Hey!' }
+            ],
+            '... got the comments expected'
+        );
+
+    };
+
 }
 
 
