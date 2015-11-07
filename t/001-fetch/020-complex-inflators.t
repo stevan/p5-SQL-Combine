@@ -73,7 +73,10 @@ foreach my $i ( 0, 1 ) {
                     relationships => {
                         comments => {
                             data => [
-                                map +{ type => $_->{type}, id => $_->{id} }, @{ $article->{comments} }
+                                map +{
+                                    type => $_->{type},
+                                    id   => $_->{id}
+                                }, @{ $article->{comments} }
                             ]
                         },
                         approver => {
@@ -97,15 +100,13 @@ foreach my $i ( 0, 1 ) {
                 inflator => sub {
                     my $comments = $_[0];
                     return [
-                        map {
-                            +{
-                                type => 'comment',
-                                id   => $_->{id},
-                                attributes => {
-                                    body => $_->{body}
-                                }
+                        map +{
+                            type => 'comment',
+                            id   => $_->{id},
+                            attributes => {
+                                body => $_->{body}
                             }
-                        } @$comments
+                        }, @$comments
                     ]
                 }
             )
