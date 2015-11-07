@@ -11,15 +11,15 @@ use Data::Dumper;
 use Test::More;
 
 BEGIN {
-    use_ok('SQL::Action::DBH::Manager');
+    use_ok('SQL::Combine::DBH::Manager');
 
-    use_ok('SQL::Action::Table');
+    use_ok('SQL::Combine::Table');
 
-    use_ok('SQL::Action::Create::One');
-    use_ok('SQL::Action::Create::Many');
+    use_ok('SQL::Combine::Create::One');
+    use_ok('SQL::Combine::Create::Many');
 
-    use_ok('SQL::Action::Fetch::One');
-    use_ok('SQL::Action::Fetch::Many');
+    use_ok('SQL::Combine::Fetch::One');
+    use_ok('SQL::Combine::Fetch::Many');
 }
 
 my @DRIVERS = ('sqlite', 'mysql');
@@ -35,43 +35,43 @@ foreach my $i ( 0, 1 ) {
 
     my $ARTICLE_ID = 1;
 
-    my $dbm = SQL::Action::DBH::Manager->new(
+    my $dbm = SQL::Combine::DBH::Manager->new(
         schemas => {
             user     => { rw => $DBH },
             comments => { rw => $DBH },
             articles => { ro => $DBH },
         }
     );
-    isa_ok($dbm, 'SQL::Action::DBH::Manager');
+    isa_ok($dbm, 'SQL::Combine::DBH::Manager');
 
-    my $Person = SQL::Action::Table->new(
+    my $Person = SQL::Combine::Table->new(
         schema => 'user',
         name   => 'person',
         driver => $DRIVER,
     );
 
-    my $Comment = SQL::Action::Table->new(
+    my $Comment = SQL::Combine::Table->new(
         schema => 'comments',
         name   => 'comment',
         driver => $DRIVER,
     );
 
-    my $Article = SQL::Action::Table->new(
+    my $Article = SQL::Combine::Table->new(
         schema => 'articles',
         name   => 'article',
         driver => $DRIVER,
     );
 
-    my $article_query = SQL::Action::Fetch::One->new(
+    my $article_query = SQL::Combine::Fetch::One->new(
         query => $Article->select(
             columns => [qw[ id title body ]],
             where   => [ id => $ARTICLE_ID ],
         )
     );
-    isa_ok($article_query, 'SQL::Action::Fetch::One');
+    isa_ok($article_query, 'SQL::Combine::Fetch::One');
 
     $article_query->fetch_related(
-        comments => SQL::Action::Fetch::Many->new(
+        comments => SQL::Combine::Fetch::Many->new(
             query => $Comment->select(
                 columns  => [qw[ id body author ]],
                 where    => [ article => $ARTICLE_ID ],
@@ -104,7 +104,7 @@ foreach my $i ( 0, 1 ) {
 
         my $PERSON_ID = 3;
 
-        my $new_person_query = SQL::Action::Create::One->new(
+        my $new_person_query = SQL::Combine::Create::One->new(
             query => $Person->insert(
                 values => [
                     id   => $PERSON_ID,
@@ -115,7 +115,7 @@ foreach my $i ( 0, 1 ) {
         );
 
         $new_person_query->create_related(
-            comments => SQL::Action::Create::Many->new(
+            comments => SQL::Combine::Create::Many->new(
                 queries => [
                     $Comment->insert(
                         values => [
@@ -154,7 +154,7 @@ foreach my $i ( 0, 1 ) {
             '... got the expected insert info'
         );
 
-        my $person_query = SQL::Action::Fetch::One->new(
+        my $person_query = SQL::Combine::Fetch::One->new(
             query => $Person->select(
                 columns => [qw[ id name age ]],
                 where   => [ id => $PERSON_ID ],
@@ -162,7 +162,7 @@ foreach my $i ( 0, 1 ) {
         );
 
         $person_query->fetch_related(
-            comments => SQL::Action::Fetch::Many->new(
+            comments => SQL::Combine::Fetch::Many->new(
                 query => $Comment->select(
                     columns  => [qw[ id body ]],
                     where    => [ author => $PERSON_ID ],

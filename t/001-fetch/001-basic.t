@@ -11,12 +11,12 @@ use Data::Dumper;
 use Test::More;
 
 BEGIN {
-    use_ok('SQL::Action::DBH::Manager');
+    use_ok('SQL::Combine::DBH::Manager');
 
-    use_ok('SQL::Action::Table');
+    use_ok('SQL::Combine::Table');
 
-    use_ok('SQL::Action::Fetch::One');
-    use_ok('SQL::Action::Fetch::Many');
+    use_ok('SQL::Combine::Fetch::One');
+    use_ok('SQL::Combine::Fetch::Many');
 }
 
 package Person {
@@ -60,26 +60,26 @@ foreach my $i ( 0, 1 ) {
     my $DRIVER = $DRIVERS[ $i ];
     my $DBH    = $DBHS[ $i ];
 
-    my $dbm = SQL::Action::DBH::Manager->new(
+    my $dbm = SQL::Combine::DBH::Manager->new(
         schemas => {
             user        => { ro => $DBH },
             __DEFAULT__ => { rw => $DBH },
         }
     );
-    isa_ok($dbm, 'SQL::Action::DBH::Manager');
+    isa_ok($dbm, 'SQL::Combine::DBH::Manager');
 
-    my $Person = SQL::Action::Table->new(
+    my $Person = SQL::Combine::Table->new(
         schema => 'user',
         name   => 'person',
         driver => $DRIVER,
     );
 
-    my $Comment = SQL::Action::Table->new(
+    my $Comment = SQL::Combine::Table->new(
         name   => 'comment',
         driver => $DRIVER,
     );
 
-    my $Article = SQL::Action::Table->new(
+    my $Article = SQL::Combine::Table->new(
         name   => 'article',
         driver => $DRIVER,
     );
@@ -88,7 +88,7 @@ foreach my $i ( 0, 1 ) {
 
         my $PERSON_ID = 1;
 
-        my $person_query = SQL::Action::Fetch::One->new(
+        my $person_query = SQL::Combine::Fetch::One->new(
             query  => $Person->select(
                 columns => [qw[ id name age ]],
                 where   => [ id => $PERSON_ID ],
@@ -100,7 +100,7 @@ foreach my $i ( 0, 1 ) {
         );
 
         $person_query->fetch_related(
-            comments => SQL::Action::Fetch::Many->new(
+            comments => SQL::Combine::Fetch::Many->new(
                 query => $Comment->select(
                     columns => [qw[ id body ]],
                     where   => [ author => $PERSON_ID ],
@@ -113,7 +113,7 @@ foreach my $i ( 0, 1 ) {
         );
 
         $person_query->fetch_related(
-            approvals => SQL::Action::Fetch::Many->new(
+            approvals => SQL::Combine::Fetch::Many->new(
                 query => $Article->select(
                     columns => [qw[ id title body created updated status ]],
                     where   => [ approver => $PERSON_ID ],
@@ -165,7 +165,7 @@ foreach my $i ( 0, 1 ) {
 
         my $PERSON_ID = 1;
 
-        my $person_query = SQL::Action::Fetch::One->new(
+        my $person_query = SQL::Combine::Fetch::One->new(
             query => $Person->select(
                 columns => [qw[ id name age ]],
                 where   => [ id => $PERSON_ID ],
@@ -173,7 +173,7 @@ foreach my $i ( 0, 1 ) {
         );
 
         $person_query->fetch_related(
-            comments => SQL::Action::Fetch::Many->new(
+            comments => SQL::Combine::Fetch::Many->new(
                 query => $Comment->select(
                     columns => [qw[ id body ]],
                     where   => [ author => $PERSON_ID ],
@@ -182,7 +182,7 @@ foreach my $i ( 0, 1 ) {
         );
 
         $person_query->fetch_related(
-            approvals => SQL::Action::Fetch::Many->new(
+            approvals => SQL::Combine::Fetch::Many->new(
                 query => $Article->select(
                     columns => [qw[ id title body created updated status ]],
                     where   => [ approver => $PERSON_ID ],

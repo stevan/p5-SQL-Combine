@@ -11,15 +11,15 @@ use Data::Dumper;
 use Test::More;
 
 BEGIN {
-    use_ok('SQL::Action::DBH::Manager');
+    use_ok('SQL::Combine::DBH::Manager');
 
-    use_ok('SQL::Action::Table');
+    use_ok('SQL::Combine::Table');
 
-    use_ok('SQL::Action::Store::One');
-    use_ok('SQL::Action::Store::Many');
+    use_ok('SQL::Combine::Store::One');
+    use_ok('SQL::Combine::Store::Many');
 
-    use_ok('SQL::Action::Fetch::One');
-    use_ok('SQL::Action::Fetch::Many');
+    use_ok('SQL::Combine::Fetch::One');
+    use_ok('SQL::Combine::Fetch::Many');
 }
 
 
@@ -34,21 +34,21 @@ foreach my $i ( 0, 1 ) {
     my $DRIVER = $DRIVERS[ $i ];
     my $DBH    = $DBHS[ $i ];
 
-    my $dbm = SQL::Action::DBH::Manager->new(
+    my $dbm = SQL::Combine::DBH::Manager->new(
         schemas => {
             user     => { rw => $DBH },
             comments => { rw => $DBH },
         }
     );
-    isa_ok($dbm, 'SQL::Action::DBH::Manager');
+    isa_ok($dbm, 'SQL::Combine::DBH::Manager');
 
-    my $Person = SQL::Action::Table->new(
+    my $Person = SQL::Combine::Table->new(
         schema => 'user',
         name   => 'person',
         driver => $DRIVER,
     );
 
-    my $Comment = SQL::Action::Table->new(
+    my $Comment = SQL::Combine::Table->new(
         schema => 'comments',
         name   => 'comment',
         driver => $DRIVER,
@@ -58,7 +58,7 @@ foreach my $i ( 0, 1 ) {
 
         my $PERSON_ID = 1;
 
-        my $new_person_query = SQL::Action::Store::One->new(
+        my $new_person_query = SQL::Combine::Store::One->new(
             query => $Person->update(
                 values => [ age  => 25 ],
                 where  => [ id => $PERSON_ID ],
@@ -66,7 +66,7 @@ foreach my $i ( 0, 1 ) {
         );
 
         $new_person_query->store_related(
-            comments => SQL::Action::Store::Many->new(
+            comments => SQL::Combine::Store::Many->new(
                 queries => [
                     $Comment->update(
                         values => [ body   => '[REDACTED]' ],
@@ -88,7 +88,7 @@ foreach my $i ( 0, 1 ) {
             '... got the expected update info'
         );
 
-        my $person_query = SQL::Action::Fetch::One->new(
+        my $person_query = SQL::Combine::Fetch::One->new(
             schema => 'user',
             query => $Person->select(
                 columns => [qw[ id name age ]],
@@ -97,7 +97,7 @@ foreach my $i ( 0, 1 ) {
         );
 
         $person_query->fetch_related(
-            comments => SQL::Action::Fetch::Many->new(
+            comments => SQL::Combine::Fetch::Many->new(
                 schema => 'comments',
                 query => $Comment->select(
                     columns => [qw[ body ]],
