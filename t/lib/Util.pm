@@ -32,6 +32,8 @@ sub setup_database {
     $dbh->do(q[DROP TABLE IF EXISTS `person`]);
     $dbh->do(q[DROP TABLE IF EXISTS `comment`]);
 
+    $dbh->do(q[DROP TABLE IF EXISTS `xref_article_author`]);
+
     $dbh->do(q[
         CREATE TABLE `article` (
             `id`       INT(10)   PRIMARY KEY,
@@ -61,11 +63,22 @@ sub setup_database {
         )
     ]);
 
+    $dbh->do(q[
+        CREATE TABLE `xref_article_author` (
+            `author`  INT(10) NOT NULL,
+            `article` INT(10) NOT NULL
+        )
+    ]);
+
     $dbh->do(q[ INSERT INTO `article` (`id`, `title`, `body`, `approver`) VALUES(1, "Title(1)", "Body(1)", 1) ]);
     $dbh->do(q[ INSERT INTO `article` (`id`, `title`, `body`, `approver`) VALUES(2, "Title(2)", "Body(2)", 1) ]);
 
     $dbh->do(q[ INSERT INTO `person` (`id`, `name`, `age`) VALUES(1, "Bob", 30) ]);
     $dbh->do(q[ INSERT INTO `person` (`id`, `name`, `age`) VALUES(2, "Alice", 32) ]);
+
+    $dbh->do(q[ INSERT INTO `xref_article_author` (`author`, `article`) VALUES(1, 1) ]);
+    $dbh->do(q[ INSERT INTO `xref_article_author` (`author`, `article`) VALUES(2, 1) ]);
+    $dbh->do(q[ INSERT INTO `xref_article_author` (`author`, `article`) VALUES(2, 2) ]);
 
     $dbh->do(q[ INSERT INTO `comment` (`id`, `body`, `author`, `article`) VALUES(1, "Yo!", 1, 1) ]);
     $dbh->do(q[ INSERT INTO `comment` (`id`, `body`, `author`, `article`) VALUES(2, "Hey!", 2, 1) ]);
