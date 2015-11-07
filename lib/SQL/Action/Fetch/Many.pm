@@ -17,10 +17,10 @@ sub execute {
     my $sth = $dbh->prepare( $sql );
     $sth->execute( @bind );
 
-    my $rows = $sth->fetchall_arrayref;
-    return unless @$rows;
+    my @rows = $sth->fetchall_arrayref;
+    return unless @rows;
 
-    my $hashes = $query->from_rows($rows);
+    my $hashes = $query->from_rows(@rows);
 
     my %relations = $self->all_relations;
     foreach my $hash ( @$hashes ) {

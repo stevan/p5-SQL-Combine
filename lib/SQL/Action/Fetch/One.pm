@@ -17,7 +17,7 @@ sub execute {
     my $sth = $dbh->prepare( $sql );
     $sth->execute( @bind );
 
-    my $rows = $sth->fetchall_arrayref;
+    my ($rows) = $sth->fetchall_arrayref;
     return unless @$rows;
 
     my ($hash) = @{ $query->from_rows($rows) };
