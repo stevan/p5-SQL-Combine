@@ -60,6 +60,8 @@ foreach my $i ( 0, 1 ) {
                 where   => [ id => $ARTICLE_ID ],
             )
         );
+        isa_ok($article_query, 'SQL::Combine::Fetch::One');
+        ok($article_query->is_static, '... the query is static');
 
         $article_query->fetch_related(
             comments => SQL::Combine::Fetch::Many->new(
@@ -118,6 +120,8 @@ foreach my $i ( 0, 1 ) {
                 where   => [ id => $ARTICLE_ID ],
             )
         );
+        isa_ok($article_query, 'SQL::Combine::Fetch::One');
+        ok($article_query->is_static, '... the query is static');
 
         my $approver_query = SQL::Combine::Fetch::One->new(
             query => sub {
@@ -140,6 +144,8 @@ foreach my $i ( 0, 1 ) {
                 }
             )
         );
+        isa_ok($approver_query, 'SQL::Combine::Fetch::One');
+        ok(!$approver_query->is_static, '... the query is not static');
 
         # NOTE:
         # This overrides the approver (id)
@@ -195,6 +201,8 @@ foreach my $i ( 0, 1 ) {
                 where   => [ id => $ARTICLE_ID ],
             )
         );
+        isa_ok($article_query, 'SQL::Combine::Fetch::One');
+        ok($article_query->is_static, '... the query is static');
 
         my $comments_query = SQL::Combine::Fetch::Many->new(
             query => $Comment->select(
@@ -203,6 +211,8 @@ foreach my $i ( 0, 1 ) {
                 order_by => 'id'
             )
         );
+        isa_ok($comments_query, 'SQL::Combine::Fetch::Many');
+        ok($comments_query->is_static, '... the query is static');
 
         # NOTE:
         # This overrides the author (id)

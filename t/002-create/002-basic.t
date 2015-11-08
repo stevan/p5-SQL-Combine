@@ -69,6 +69,7 @@ foreach my $i ( 0, 1 ) {
         )
     );
     isa_ok($article_query, 'SQL::Combine::Fetch::One');
+    ok($article_query->is_static, '... the query is static');
 
     $article_query->fetch_related(
         comments => SQL::Combine::Fetch::Many->new(
@@ -113,6 +114,8 @@ foreach my $i ( 0, 1 ) {
                 ]
             )
         );
+        isa_ok($new_person_query, 'SQL::Combine::Create::One');
+        ok($new_person_query->is_static, '... the query is static');
 
         $new_person_query->create_related(
             comments => SQL::Combine::Create::Many->new(
@@ -158,6 +161,8 @@ foreach my $i ( 0, 1 ) {
                 where   => [ id => $PERSON_ID ],
             )
         );
+        isa_ok($person_query, 'SQL::Combine::Fetch::One');
+        ok($person_query->is_static, '... the query is static');
 
         $person_query->fetch_related(
             comments => SQL::Combine::Fetch::Many->new(

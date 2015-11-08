@@ -64,6 +64,8 @@ foreach my $i ( 0, 1 ) {
                 where  => [ id => $PERSON_ID ],
             )
         );
+        isa_ok($new_person_query, 'SQL::Combine::Store::One');
+        ok($new_person_query->is_static, '... the query is static');
 
         $new_person_query->store_related(
             comments => SQL::Combine::Store::Many->new(
@@ -95,6 +97,8 @@ foreach my $i ( 0, 1 ) {
                 where   => [ id => $PERSON_ID ],
             )
         );
+        isa_ok($person_query, 'SQL::Combine::Fetch::One');
+        ok($person_query->is_static, '... the query is static');
 
         $person_query->fetch_related(
             comments => SQL::Combine::Fetch::Many->new(

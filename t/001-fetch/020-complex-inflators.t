@@ -90,6 +90,8 @@ foreach my $i ( 0, 1 ) {
                 }
             }
         );
+        isa_ok($article_query, 'SQL::Combine::Fetch::One');
+        ok($article_query->is_static, '... the query is static');
 
         $article_query->fetch_related(
             comments => SQL::Combine::Fetch::Many->new(
