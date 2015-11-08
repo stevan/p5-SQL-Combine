@@ -12,39 +12,28 @@ has '_composer' => (
         to_sql
         to_bind
         from_rows
-    ]]
-);
-
-has 'primary_key' => (
-    is      => 'ro',
-    isa     => 'Str',
+    ]],
     lazy    => 1,
-    default => sub { $_[0]->table->primary_key }
-);
-
-has 'insert_id'   => (
-    is        => 'ro',
-    isa       => 'Num',
-    predicate => 'has_insert_id',
-    writer    => 'set_insert_id',
-);
-
-sub BUILD {
-    my ($self, $params) = @_;
-
-    my %values = ref $params->{values} eq 'HASH' ? %{ $params->{values} } : @{ $params->{values} };
-    if ( my $id = $values{ $self->primary_key } ) {
-        $self->set_insert_id( $id );
-    }
-
-    $self->_composer(
+    default => sub {
+        my $self = shift;
         SQL::Composer::Insert->new(
             driver => $self->table->driver,
             into   => $self->table->name,
 
-            values => $params->{values},
+            values => Clone::clone($self->values),
         )
-    );
+    }
+);
+
+has values => ( is => 'ro' );
+
+sub locate_id {
+    my $self   = shift;
+    my %values = ref $self->values eq 'HASH' ? %{ $self->values } : @{ $self->values };
+    if ( my $id = $values{ $self->primary_key } ) {
+        return $id;
+    }
+    return;
 }
 
 __PACKAGE__->meta->make_immutable;

@@ -1,6 +1,7 @@
 package SQL::Combine::Table::Delete;
 use Moose;
 
+use Clone ();
 use SQL::Composer::Delete;
 
 with 'SQL::Combine::Table::Query';
@@ -12,22 +13,33 @@ has '_composer' => (
         to_sql
         to_bind
         from_rows
-    ]]
-);
-
-sub BUILD {
-    my ($self, $params) = @_;
-    $self->_composer(
+    ]],
+    lazy    => 1,
+    default => sub {
+        my $self = shift;
         SQL::Composer::Delete->new(
             driver => $self->table->driver,
             from   => $self->table->name,
 
-            where  => $params->{where},
+            where  => Clone::clone($self->where),
 
-            limit  => $params->{limit},
-            offset => $params->{offset},
+            limit  => Clone::clone($self->limit),
+            offset => Clone::clone($self->offset),
         )
-    );
+    }
+);
+
+has where  => ( is => 'ro' );
+has limit  => ( is => 'ro' );
+has offset => ( is => 'ro' );
+
+sub locate_id {
+    my $self  = shift;
+    my %where = ref $self->where eq 'HASH' ? %{ $self->where } : @{ $self->where };
+    if ( my $id = $where{ $self->primary_key } ) {
+        return $id;
+    }
+    return;
 }
 
 __PACKAGE__->meta->make_immutable;

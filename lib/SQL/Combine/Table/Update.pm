@@ -12,54 +12,50 @@ has '_composer' => (
         to_sql
         to_bind
         from_rows
-    ]]
-);
-
-has 'primary_key' => (
-    is      => 'ro',
-    isa     => 'Str',
+    ]],
     lazy    => 1,
-    default => sub { $_[0]->table->primary_key }
-);
-
-has 'insert_id'   => (
-    is        => 'ro',
-    isa       => 'Num',
-    predicate => 'has_insert_id',
-    writer    => 'set_insert_id',
-);
-
-sub BUILD {
-    my ($self, $params) = @_;
-
-    my $primary_key = $self->primary_key;
-
-    my $values = $params->{values} || $params->{set};
-    my %values = ref $values eq 'HASH' ? %$values : @$values;
-    if ( my $id = $values{ $primary_key } ) {
-        $self->set_insert_id( $id );
-    }
-    else {
-        my %where = ref $params->{where} eq 'HASH' ? %{ $params->{where} } : @{ $params->{where} };
-        if ( my $id = $where{ $primary_key } ) {
-            $self->set_insert_id( $id );
-        }
-    }
-
-    $self->_composer(
+    default => sub {
+        my $self = shift;
         SQL::Composer::Update->new(
             driver => $self->table->driver,
             table  => $self->table->name,
 
-            values => $params->{values},
-            set    => $params->{set},
+            values => Clone::clone($self->values),
+            set    => Clone::clone($self->set),
 
-            where  => $params->{where},
+            where  => Clone::clone($self->where),
 
-            limit  => $params->{limit},
-            offset => $params->{offset},
+            limit  => Clone::clone($self->limit),
+            offset => Clone::clone($self->offset),
         )
-    );
+    }
+);
+
+has values => ( is => 'ro' );
+has set    => ( is => 'ro' );
+
+has where  => ( is => 'ro' );
+
+has limit  => ( is => 'ro' );
+has offset => ( is => 'ro' );
+
+sub locate_id {
+    my $self = shift;
+
+    my $primary_key = $self->primary_key;
+
+    my $values = $self->values || $self->set;
+    my %values = ref $values eq 'HASH' ? %$values : @$values;
+    if ( my $id = $values{ $primary_key } ) {
+        return $id;
+    }
+    else {
+        my %where = ref $self->where eq 'HASH' ? %{ $self->where } : @{ $self->where };
+        if ( my $id = $where{ $primary_key } ) {
+            return $id;
+        }
+    }
+    return;
 }
 
 __PACKAGE__->meta->make_immutable;

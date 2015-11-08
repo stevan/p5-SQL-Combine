@@ -12,31 +12,51 @@ has '_composer' => (
         to_sql
         to_bind
         from_rows
-    ]]
-);
-
-sub BUILD {
-    my ($self, $params) = @_;
-    $self->_composer(
+    ]],
+    lazy    => 1,
+    default => sub {
+        my $self = shift;
         SQL::Composer::Select->new(
             driver     => $self->table->driver,
             from       => $self->table->name,
-            join       => $params->{join},
+            join       => Clone::clone($self->join),
 
-            columns    => $params->{columns},
+            columns    => Clone::clone($self->columns),
 
-            where      => $params->{where},
+            where      => Clone::clone($self->where),
 
-            group_by   => $params->{group_by},
-            having     => $params->{having},
-            order_by   => $params->{order_by},
+            group_by   => Clone::clone($self->group_by),
+            having     => Clone::clone($self->having),
+            order_by   => Clone::clone($self->order_by),
 
-            limit      => $params->{limit},
-            offset     => $params->{offset},
+            limit      => Clone::clone($self->limit),
+            offset     => Clone::clone($self->offset),
 
-            for_update => $params->{for_update},
+            for_update => Clone::clone($self->for_update),
         )
-    );
+    }
+);
+
+has join       => ( is => 'ro' );
+has columns    => ( is => 'ro' );
+has where      => ( is => 'ro' );
+
+has group_by   => ( is => 'ro' );
+has order_by   => ( is => 'ro' );
+has having     => ( is => 'ro' );
+
+has limit      => ( is => 'ro' );
+has offset     => ( is => 'ro' );
+
+has for_update => ( is => 'ro' );
+
+sub locate_id {
+    my $self  = shift;
+    my %where = ref $self->where eq 'HASH' ? %{ $self->where } : @{ $self->where };
+    if ( my $id = $where{ $self->primary_key } ) {
+        return $id;
+    }
+    return;
 }
 
 __PACKAGE__->meta->make_immutable;

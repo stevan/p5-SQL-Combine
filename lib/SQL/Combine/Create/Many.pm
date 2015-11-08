@@ -30,9 +30,7 @@ sub execute {
         my $sth = $dbh->prepare( $sql );
         $sth->execute( @bind );
 
-        my $last_insert_id = $query->has_insert_id
-            ? $query->insert_id
-            : $dbh->last_insert_id( undef, undef, undef, undef, {} );
+        my $last_insert_id = $query->id // $dbh->last_insert_id( undef, undef, undef, undef, {} );
 
         push @ids => $last_insert_id;
     }
