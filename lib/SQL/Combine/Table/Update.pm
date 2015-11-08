@@ -1,6 +1,7 @@
 package SQL::Combine::Table::Update;
 use Moose;
 
+use Clone ();
 use SQL::Composer::Update;
 
 with 'SQL::Combine::Table::Query';

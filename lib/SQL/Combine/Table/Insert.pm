@@ -1,6 +1,7 @@
 package SQL::Combine::Table::Insert;
 use Moose;
 
+use Clone ();
 use SQL::Composer::Insert;
 
 with 'SQL::Combine::Table::Query';

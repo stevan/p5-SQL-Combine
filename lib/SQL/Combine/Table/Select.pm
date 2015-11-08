@@ -1,6 +1,7 @@
 package SQL::Combine::Table::Select;
 use Moose;
 
+use Clone ();
 use SQL::Composer::Select;
 
 with 'SQL::Combine::Table::Query';
