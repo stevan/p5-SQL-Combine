@@ -7,9 +7,10 @@ use SQL::Combine::Table::Upsert;
 use SQL::Combine::Table::Insert;
 use SQL::Combine::Table::Delete;
 
-has 'schema' => ( is => 'ro', isa => 'Str', default => '__DEFAULT__' );
-has 'name'   => ( is => 'ro', isa => 'Str' );
-has 'driver' => ( is => 'ro', isa => 'Str' );
+has 'schema'      => ( is => 'ro', isa => 'Str', default => '__DEFAULT__' );
+has 'name'        => ( is => 'ro', isa => 'Str' );
+has 'primary_key' => ( is => 'ro', isa => 'Str', default => 'id' );
+has 'driver'      => ( is => 'ro', isa => 'Str' );
 
 sub select {
     my ($self, %args) = @_;

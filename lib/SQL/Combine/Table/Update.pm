@@ -15,7 +15,13 @@ has '_composer' => (
     ]]
 );
 
-has 'primary_key' => ( is => 'ro', isa => 'Str', default => 'id' );
+has 'primary_key' => (
+    is      => 'ro',
+    isa     => 'Str',
+    lazy    => 1,
+    default => sub { $_[0]->table->primary_key }
+);
+
 has 'insert_id'   => (
     is        => 'ro',
     isa       => 'Num',
