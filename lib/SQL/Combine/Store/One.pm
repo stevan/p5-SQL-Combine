@@ -9,6 +9,11 @@ has 'query' => (
     required => 1,
 );
 
+sub is_static {
+    my $self = shift;
+    not( ref $self->query eq 'CODE' )
+}
+
 sub execute {
     my ($self, $dbm, $result) = @_;
 

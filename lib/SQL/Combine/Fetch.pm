@@ -11,6 +11,11 @@ has 'query' => (
     required => 1,
 );
 
+sub is_static {
+    my $self = shift;
+    not( ref $self->query eq 'CODE' )
+}
+
 has 'inflator' => (
     is        => 'ro',
     isa       => 'CodeRef',
