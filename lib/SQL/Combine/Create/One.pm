@@ -14,7 +14,7 @@ has 'query' => (
 
 sub is_static {
     my $self = shift;
-    not( ref $self->query eq 'CODE' )
+    return ref $self->query ne 'CODE';
 }
 
 sub execute {
