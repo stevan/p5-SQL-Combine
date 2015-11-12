@@ -12,7 +12,7 @@ has 'name'        => ( is => 'ro', isa => 'Str' );
 has 'primary_key' => ( is => 'ro', isa => 'Str', default => 'id' );
 has 'driver'      => ( is => 'ro', isa => 'Str' );
 
-sub select {
+sub select :method {
     my ($self, %args) = @_;
     return SQL::Combine::Table::Select->new( table => $self, %args );
 }
@@ -32,7 +32,7 @@ sub insert {
     return SQL::Combine::Table::Insert->new( table => $self, %args );
 }
 
-sub delete {
+sub delete :method {
     my ($self, %args) = @_;
     return SQL::Combine::Table::Delete->new( table => $self, %args );
 }
