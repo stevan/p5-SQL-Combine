@@ -11,7 +11,7 @@ has 'xref_query' => (
 
 has '+query' => ( isa => 'CodeRef' );
 
-sub is_static { 0 }
+sub is_static { return 0 }
 
 sub execute {
     my ($self, $dbm, $result) = @_;
