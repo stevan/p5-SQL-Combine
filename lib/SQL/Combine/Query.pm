@@ -15,6 +15,17 @@ has 'id'   => (
 
 requires 'locate_id';
 
+# NOTE:
+# from the SQL::Composer API and created
+# as delegated methods, so can't easily
+# check them in requires. *sigh*
+# Moose!!!! </shakes-fist>
+# - SL
+
+# requires 'to_sql';
+# requires 'to_bind';
+# requires 'from_rows';
+
 no Moose::Role; 1;
 
 __END__
