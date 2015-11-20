@@ -61,14 +61,6 @@ sub delete :method {
     );
 }
 
-# FIXME:
-# Sufficient for now, but wrong way to do it
-# - SL
-sub clone {
-    my ($self, %args) = @_;
-    ref( $self )->new( %$self, %args )
-}
-
 __PACKAGE__->meta->make_immutable;
 
 no Moose; 1;
