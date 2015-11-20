@@ -57,6 +57,7 @@ foreach my $i ( 0, 1 ) {
             )
         ]
     );
+    isa_ok($m, 'SQL::Combine::Schema::Manager');
 
     my $User  = $m->get_schema_by_name('user');
     my $Other = $m->get_schema_by_name('other');
@@ -81,29 +82,31 @@ foreach my $i ( 0, 1 ) {
         isa_ok($new_person_query, 'SQL::Combine::Action::Create::One');
         ok($new_person_query->is_static, '... the query is static');
 
-        $new_person_query->create_related(
-            comments => SQL::Combine::Action::Create::Many->new(
-                schema  => $Other,
-                queries => [
-                    $Comment->insert(
-                        values => [
-                            id       => 5,
-                            body     => 'Wassup!',
-                            article  => 1,
-                            author   => $PERSON_ID
-                        ]
-                    ),
-                    $Comment->insert(
-                        values => [
-                            id       => 6,
-                            body     => 'DOH!',
-                            article  => 1,
-                            author   => $PERSON_ID
-                        ]
-                    ),
-                ]
-            )
+        my $comments_query = SQL::Combine::Action::Create::Many->new(
+            schema  => $Other,
+            queries => [
+                $Comment->insert(
+                    values => [
+                        id       => 5,
+                        body     => 'Wassup!',
+                        article  => 1,
+                        author   => $PERSON_ID
+                    ]
+                ),
+                $Comment->insert(
+                    values => [
+                        id       => 6,
+                        body     => 'DOH!',
+                        article  => 1,
+                        author   => $PERSON_ID
+                    ]
+                ),
+            ]
         );
+        isa_ok($comments_query, 'SQL::Combine::Action::Create::Many');
+        ok($comments_query->is_static, '... the query is static');
+
+        $new_person_query->create_related( comments => $comments_query );
 
         my $new_person_info = $new_person_query->execute;
 

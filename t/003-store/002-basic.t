@@ -83,21 +83,23 @@ foreach my $i ( 0, 1 ) {
         isa_ok($new_person_query, 'SQL::Combine::Action::Store::One');
         ok($new_person_query->is_static, '... the query is static');
 
-        $new_person_query->store_related(
-            comments => SQL::Combine::Action::Store::Many->new(
-                schema  => $Other,
-                queries => [
-                    $Comment->update(
-                        values => [ body   => '[REDACTED]' ],
-                        where  => [ author => $PERSON_ID, body => 'Yo!' ],
-                    ),
-                    $Comment->update(
-                        values => [ body   => 'Yo! [CITATION NEEDED]' ],
-                        where  => [ author => $PERSON_ID, body => 'Yo! (again)' ],
-                    )
-                ]
-            )
+        my $comments_query = SQL::Combine::Action::Store::Many->new(
+            schema  => $Other,
+            queries => [
+                $Comment->update(
+                    values => [ body   => '[REDACTED]' ],
+                    where  => [ author => $PERSON_ID, body => 'Yo!' ],
+                ),
+                $Comment->update(
+                    values => [ body   => 'Yo! [CITATION NEEDED]' ],
+                    where  => [ author => $PERSON_ID, body => 'Yo! (again)' ],
+                )
+            ]
         );
+        isa_ok($comments_query, 'SQL::Combine::Action::Store::Many');
+        ok($comments_query->is_static, '... the query is static');
+
+        $new_person_query->store_related( comments => $comments_query );
 
         my $new_person_info = $new_person_query->execute;
 

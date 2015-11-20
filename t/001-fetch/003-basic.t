@@ -193,22 +193,24 @@ foreach my $i ( 0, 1 ) {
         isa_ok($article_query, 'SQL::Combine::Action::Fetch::One');
         ok($article_query->is_static, '... the query is static');
 
-        $article_query->fetch_related(
-            authors => SQL::Combine::Action::Fetch::Many::XRef->new(
-                schema     => $User,
-                xref_query => $Article2Person->select(
-                    columns => [qw[ author ]],
-                    where   => [ article => $ARTICLE_ID ],
-                ),
-                query => sub {
-                    my $results = $_[0];
-                    $Person->select(
-                        columns => [qw[ id name age ]],
-                        where   => [ id => [ map { $_->{author} } @$results ] ]
-                    )
-                }
-            )
+        my $authors_query = SQL::Combine::Action::Fetch::Many::XRef->new(
+            schema     => $User,
+            xref_query => $Article2Person->select(
+                columns => [qw[ author ]],
+                where   => [ article => $ARTICLE_ID ],
+            ),
+            query => sub {
+                my $results = $_[0];
+                $Person->select(
+                    columns => [qw[ id name age ]],
+                    where   => [ id => [ map { $_->{author} } @$results ] ]
+                )
+            }
         );
+        isa_ok($authors_query, 'SQL::Combine::Action::Fetch::Many::XRef');
+        ok(!$authors_query->is_static, '... the query is not static');
+
+        $article_query->fetch_related( authors => $authors_query );
 
         $article_query->fetch_related(
             comments => SQL::Combine::Action::Fetch::Many->new(
