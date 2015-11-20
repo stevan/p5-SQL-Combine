@@ -1,40 +1,72 @@
 package SQL::Combine::Table;
 use Moose;
 
-use SQL::Combine::Table::Select;
-use SQL::Combine::Table::Update;
-use SQL::Combine::Table::Upsert;
-use SQL::Combine::Table::Insert;
-use SQL::Combine::Table::Delete;
+use SQL::Combine::Query::Select;
+use SQL::Combine::Query::Update;
+use SQL::Combine::Query::Upsert;
+use SQL::Combine::Query::Insert;
+use SQL::Combine::Query::Delete;
 
-has 'schema'      => ( is => 'ro', isa => 'Str', default => '__DEFAULT__' );
-has 'name'        => ( is => 'ro', isa => 'Str' );
+has 'name'        => ( is => 'ro', isa => 'Str', required => 1 );
+has 'driver'      => ( is => 'ro', isa => 'Str', required => 1 );
 has 'primary_key' => ( is => 'ro', isa => 'Str', default => 'id' );
-has 'driver'      => ( is => 'ro', isa => 'Str' );
 
 sub select :method {
     my ($self, %args) = @_;
-    return SQL::Combine::Table::Select->new( table => $self, %args );
+    return SQL::Combine::Query::Select->new(
+        driver      => $self->driver,
+        table_name  => $self->name,
+        primary_key => $self->primary_key,
+        %args
+    );
 }
 
 sub update {
     my ($self, %args) = @_;
-    return SQL::Combine::Table::Update->new( table => $self, %args );
+    return SQL::Combine::Query::Update->new(
+        driver      => $self->driver,
+        table_name  => $self->name,
+        primary_key => $self->primary_key,
+        %args
+    );
 }
 
 sub upsert {
     my ($self, %args) = @_;
-    return SQL::Combine::Table::Upsert->new( table => $self, %args );
+    return SQL::Combine::Query::Upsert->new(
+        driver      => $self->driver,
+        table_name  => $self->name,
+        primary_key => $self->primary_key,
+        %args
+    );
 }
 
 sub insert {
     my ($self, %args) = @_;
-    return SQL::Combine::Table::Insert->new( table => $self, %args );
+    return SQL::Combine::Query::Insert->new(
+        driver      => $self->driver,
+        table_name  => $self->name,
+        primary_key => $self->primary_key,
+        %args
+    );
 }
 
 sub delete :method {
     my ($self, %args) = @_;
-    return SQL::Combine::Table::Delete->new( table => $self, %args );
+    return SQL::Combine::Query::Delete->new(
+        driver      => $self->driver,
+        table_name  => $self->name,
+        primary_key => $self->primary_key,
+        %args
+    );
+}
+
+# FIXME:
+# Sufficient for now, but wrong way to do it
+# - SL
+sub clone {
+    my ($self, %args) = @_;
+    ref( $self )->new( %$self, %args )
 }
 
 __PACKAGE__->meta->make_immutable;

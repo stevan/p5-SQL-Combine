@@ -1,14 +1,14 @@
-package SQL::Combine::Table::Insert;
+package SQL::Combine::Query::Upsert;
 use Moose;
 
 use Clone ();
-use SQL::Composer::Insert;
+use SQL::Composer::Upsert;
 
-with 'SQL::Combine::Table::Query';
+with 'SQL::Combine::Query';
 
 has '_composer' => (
     is      => 'rw',
-    isa     => 'SQL::Composer::Insert',
+    isa     => 'SQL::Composer::Upsert',
     handles => [qw[
         to_sql
         to_bind
@@ -17,9 +17,9 @@ has '_composer' => (
     lazy    => 1,
     default => sub {
         my $self = shift;
-        SQL::Composer::Insert->new(
-            driver => $self->table->driver,
-            into   => $self->table->name,
+        SQL::Composer::Upsert->new(
+            driver => $self->driver,
+            into   => $self->table_name,
 
             values => Clone::clone($self->values),
         )

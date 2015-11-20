@@ -11,12 +11,12 @@ use Data::Dumper;
 use Test::More;
 
 BEGIN {
-    use_ok('SQL::Combine::DBH::Manager');
-
+    use_ok('SQL::Combine::Schema::Manager');
+    use_ok('SQL::Combine::Schema');
     use_ok('SQL::Combine::Table');
 
-    use_ok('SQL::Combine::Fetch::One');
-    use_ok('SQL::Combine::Fetch::Many');
+    use_ok('SQL::Combine::Action::Fetch::One');
+    use_ok('SQL::Combine::Action::Fetch::Many');
 }
 
 my @DRIVERS = ('sqlite', 'mysql');
@@ -30,32 +30,41 @@ foreach my $i ( 0, 1 ) {
     my $DRIVER = $DRIVERS[ $i ];
     my $DBH    = $DBHS[ $i ];
 
-    my $dbm = SQL::Combine::DBH::Manager->new(
-        schemas => { __DEFAULT__ => { rw => $DBH } }
+    my $m = SQL::Combine::Schema::Manager->new(
+        schemas => [
+            SQL::Combine::Schema->new(
+                name   => 'user',
+                dbh    => { rw => $DBH },
+                tables => [
+                    SQL::Combine::Table->new(
+                        name   => 'person',
+                        driver => $DRIVER,
+                    ),
+                    SQL::Combine::Table->new(
+                        name   => 'comment',
+                        driver => $DRIVER,
+                    ),
+                    SQL::Combine::Table->new(
+                        name   => 'article',
+                        driver => $DRIVER,
+                    ),
+                ]
+            )
+        ]
     );
-    isa_ok($dbm, 'SQL::Combine::DBH::Manager');
 
-    my $Person = SQL::Combine::Table->new(
-        name   => 'person',
-        driver => $DRIVER,
-    );
-
-    my $Comment = SQL::Combine::Table->new(
-        name   => 'comment',
-        driver => $DRIVER,
-    );
-
-    my $Article = SQL::Combine::Table->new(
-        name   => 'article',
-        driver => $DRIVER,
-    );
+    my $User           = $m->get_schema_by_name('user');
+    my $Person         = $User->get_table_by_name('person');
+    my $Comment        = $User->get_table_by_name('comment');
+    my $Article        = $User->get_table_by_name('article');
 
     subtest '... get article with all relations (raw)' => sub {
 
         my $ARTICLE_ID = 1;
 
-        my $article_query = SQL::Combine::Fetch::One->new(
-            query => $Article->select(
+        my $article_query = SQL::Combine::Action::Fetch::One->new(
+            schema => $User,
+            query  => $Article->select(
                 columns => [qw[ id title body created updated status approver ]],
                 where   => [ id => $ARTICLE_ID ],
             ),
@@ -90,12 +99,13 @@ foreach my $i ( 0, 1 ) {
                 }
             }
         );
-        isa_ok($article_query, 'SQL::Combine::Fetch::One');
+        isa_ok($article_query, 'SQL::Combine::Action::Fetch::One');
         ok($article_query->is_static, '... the query is static');
 
         $article_query->fetch_related(
-            comments => SQL::Combine::Fetch::Many->new(
-                query => $Comment->select(
+            comments => SQL::Combine::Action::Fetch::Many->new(
+                schema => $User,
+                query  => $Comment->select(
                     columns => [qw[ id body ]],
                     where   => [ article => $ARTICLE_ID ],
                 ),
@@ -115,8 +125,9 @@ foreach my $i ( 0, 1 ) {
         );
 
         $article_query->fetch_related(
-            approver => SQL::Combine::Fetch::One->new(
-                query => sub {
+            approver => SQL::Combine::Action::Fetch::One->new(
+                schema => $User,
+                query  => sub {
                     my $result = $_[0];
                     $Person->select(
                         columns => [qw[ id name age ]],
@@ -137,7 +148,7 @@ foreach my $i ( 0, 1 ) {
             )
         );
 
-        my $article = $article_query->execute( $dbm, {} );
+        my $article = $article_query->execute;
 
         is_deeply(
             $article,
@@ -190,7 +201,7 @@ foreach my $i ( 0, 1 ) {
             '... got the transformed inflated stuff as expected'
         );
 
-        my $comments = $article_query->relations->{comments}->execute( $dbm, {} );
+        my $comments = $article_query->relations->{comments}->execute;
 
         is_deeply(
             $comments,
@@ -213,7 +224,7 @@ foreach my $i ( 0, 1 ) {
             '... got the transformed inflated subquery stuff as expected'
         );
 
-        my $approver = $article_query->relations->{approver}->execute( $dbm, {} );
+        my $approver = $article_query->relations->{approver}->execute;
 
         is_deeply(
             $approver,

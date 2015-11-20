@@ -11,15 +11,15 @@ use Data::Dumper;
 use Test::More;
 
 BEGIN {
-    use_ok('SQL::Combine::DBH::Manager');
-
+    use_ok('SQL::Combine::Schema::Manager');
+    use_ok('SQL::Combine::Schema');
     use_ok('SQL::Combine::Table');
 
-    use_ok('SQL::Combine::Create::One');
-    use_ok('SQL::Combine::Create::Many');
+    use_ok('SQL::Combine::Action::Create::One');
+    use_ok('SQL::Combine::Action::Create::Many');
 
-    use_ok('SQL::Combine::Fetch::One');
-    use_ok('SQL::Combine::Fetch::Many');
+    use_ok('SQL::Combine::Action::Fetch::One');
+    use_ok('SQL::Combine::Action::Fetch::Many');
 }
 
 my @DRIVERS = ('sqlite', 'mysql');
@@ -35,45 +35,56 @@ foreach my $i ( 0, 1 ) {
 
     my $ARTICLE_ID = 1;
 
-    my $dbm = SQL::Combine::DBH::Manager->new(
-        schemas => {
-            user     => { rw => $DBH },
-            comments => { rw => $DBH },
-            articles => { ro => $DBH },
-        }
+    my $m = SQL::Combine::Schema::Manager->new(
+        schemas => [
+            SQL::Combine::Schema->new(
+                name   => 'user',
+                dbh    => { rw => $DBH },
+                tables => [
+                    SQL::Combine::Table->new(
+                        name   => 'person',
+                        driver => $DRIVER,
+                    )
+                ]
+            ),
+            SQL::Combine::Schema->new(
+                name   => 'other',
+                dbh    => { rw => $DBH },
+                tables => [
+                    SQL::Combine::Table->new(
+                        name   => 'comment',
+                        driver => $DRIVER,
+                    ),
+                    SQL::Combine::Table->new(
+                        name   => 'article',
+                        driver => $DRIVER,
+                    )
+                ]
+            )
+        ]
     );
-    isa_ok($dbm, 'SQL::Combine::DBH::Manager');
 
-    my $Person = SQL::Combine::Table->new(
-        schema => 'user',
-        name   => 'person',
-        driver => $DRIVER,
-    );
+    my $User  = $m->get_schema_by_name('user');
+    my $Other = $m->get_schema_by_name('other');
 
-    my $Comment = SQL::Combine::Table->new(
-        schema => 'comments',
-        name   => 'comment',
-        driver => $DRIVER,
-    );
+    my $Person  = $User->get_table_by_name('person');
+    my $Comment = $Other->get_table_by_name('comment');
+    my $Article = $Other->get_table_by_name('article');
 
-    my $Article = SQL::Combine::Table->new(
-        schema => 'articles',
-        name   => 'article',
-        driver => $DRIVER,
-    );
-
-    my $article_query = SQL::Combine::Fetch::One->new(
-        query => $Article->select(
+    my $article_query = SQL::Combine::Action::Fetch::One->new(
+        schema => $Other,
+        query  => $Article->select(
             columns => [qw[ id title body ]],
             where   => [ id => $ARTICLE_ID ],
         )
     );
-    isa_ok($article_query, 'SQL::Combine::Fetch::One');
+    isa_ok($article_query, 'SQL::Combine::Action::Fetch::One');
     ok($article_query->is_static, '... the query is static');
 
     $article_query->fetch_related(
-        comments => SQL::Combine::Fetch::Many->new(
-            query => $Comment->select(
+        comments => SQL::Combine::Action::Fetch::Many->new(
+            schema => $Other,
+            query  => $Comment->select(
                 columns  => [qw[ id body author ]],
                 where    => [ article => $ARTICLE_ID ],
                 order_by => 'id',
@@ -82,7 +93,7 @@ foreach my $i ( 0, 1 ) {
     );
 
     subtest '... test some article stuff (before change)' => sub {
-        my $article = $article_query->execute( $dbm, {} );
+        my $article = $article_query->execute;
 
         #warn Dumper $article;
 
@@ -105,8 +116,9 @@ foreach my $i ( 0, 1 ) {
 
         my $PERSON_ID = 3;
 
-        my $new_person_query = SQL::Combine::Create::One->new(
-            query => $Person->insert(
+        my $new_person_query = SQL::Combine::Action::Create::One->new(
+            schema => $User,
+            query  => $Person->insert(
                 values => [
                     id   => $PERSON_ID,
                     name => 'Jim',
@@ -114,11 +126,12 @@ foreach my $i ( 0, 1 ) {
                 ]
             )
         );
-        isa_ok($new_person_query, 'SQL::Combine::Create::One');
+        isa_ok($new_person_query, 'SQL::Combine::Action::Create::One');
         ok($new_person_query->is_static, '... the query is static');
 
         $new_person_query->create_related(
-            comments => SQL::Combine::Create::Many->new(
+            comments => SQL::Combine::Action::Create::Many->new(
+                schema  => $Other,
                 queries => [
                     $Comment->insert(
                         values => [
@@ -140,7 +153,7 @@ foreach my $i ( 0, 1 ) {
             )
         );
 
-        my $new_person_info = $new_person_query->execute( $dbm, {} );
+        my $new_person_info = $new_person_query->execute;
 
         #warn Dumper $new_person_info;
 
@@ -155,18 +168,20 @@ foreach my $i ( 0, 1 ) {
             '... got the expected insert info'
         );
 
-        my $person_query = SQL::Combine::Fetch::One->new(
-            query => $Person->select(
+        my $person_query = SQL::Combine::Action::Fetch::One->new(
+            schema => $User,
+            query  => $Person->select(
                 columns => [qw[ id name age ]],
                 where   => [ id => $PERSON_ID ],
             )
         );
-        isa_ok($person_query, 'SQL::Combine::Fetch::One');
+        isa_ok($person_query, 'SQL::Combine::Action::Fetch::One');
         ok($person_query->is_static, '... the query is static');
 
         $person_query->fetch_related(
-            comments => SQL::Combine::Fetch::Many->new(
-                query => $Comment->select(
+            comments => SQL::Combine::Action::Fetch::Many->new(
+                schema => $Other,
+                query  => $Comment->select(
                     columns  => [qw[ id body ]],
                     where    => [ author => $PERSON_ID ],
                     order_by => 'id',
@@ -174,7 +189,7 @@ foreach my $i ( 0, 1 ) {
             )
         );
 
-        my $jim = $person_query->execute( $dbm, {} );
+        my $jim = $person_query->execute;
 
         #warn Dumper $jim;
 
@@ -201,7 +216,7 @@ foreach my $i ( 0, 1 ) {
     };
 
     subtest '... test some article stuff (after change)' => sub {
-        my $article = $article_query->execute( $dbm, {} );
+        my $article = $article_query->execute;
 
         #warn Dumper $article;
 

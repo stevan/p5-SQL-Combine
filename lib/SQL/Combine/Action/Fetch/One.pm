@@ -1,10 +1,11 @@
-package SQL::Combine::Fetch::One;
+package SQL::Combine::Action::Fetch::One;
 use Moose;
 
-with 'SQL::Combine::Fetch';
+with 'SQL::Combine::Action::Fetch';
 
 sub execute {
-    my ($self, $dbm, $result) = @_;
+    my $self   = shift;
+    my $result = shift // {};
 
     my $query = $self->query;
     $query = $query->( $result )
@@ -13,7 +14,7 @@ sub execute {
     my $sql  = $query->to_sql;
     my @bind = $query->to_bind;
 
-    my $dbh = $dbm->ro( $query->table->schema );
+    my $dbh = $self->schema->get_ro_dbh;
     my $sth = $dbh->prepare( $sql );
     $sth->execute( @bind );
 
@@ -24,7 +25,7 @@ sub execute {
 
     my %relations = $self->all_relations;
     foreach my $rel ( keys %relations ) {
-        $hash->{ $rel } = $relations{ $rel }->execute( $dbm, $hash );
+        $hash->{ $rel } = $relations{ $rel }->execute( $hash );
     }
 
     my $obj = $self->has_inflator ? $self->inflator->( $hash ) : $hash;

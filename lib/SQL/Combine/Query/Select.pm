@@ -1,10 +1,10 @@
-package SQL::Combine::Table::Select;
+package SQL::Combine::Query::Select;
 use Moose;
 
 use Clone ();
 use SQL::Composer::Select;
 
-with 'SQL::Combine::Table::Query';
+with 'SQL::Combine::Query';
 
 has '_composer' => (
     is      => 'rw',
@@ -18,8 +18,8 @@ has '_composer' => (
     default => sub {
         my $self = shift;
         SQL::Composer::Select->new(
-            driver     => $self->table->driver,
-            from       => $self->table->name,
+            driver     => $self->driver,
+            from       => $self->table_name,
             join       => Clone::clone($self->join),
 
             columns    => Clone::clone($self->columns),

@@ -1,12 +1,12 @@
-package SQL::Combine::Store;
+package SQL::Combine::Action::Store;
 use Moose::Role;
 
-with 'SQL::Combine';
+with 'SQL::Combine::Action';
 
 has 'relations' => (
     traits   => [ 'Hash' ],
     is       => 'ro',
-    isa      => 'HashRef[SQL::Combine::Store]',
+    isa      => 'HashRef[SQL::Combine::Action::Store]',
     lazy     => 1,
     default  => sub { +{} },
     handles  => {

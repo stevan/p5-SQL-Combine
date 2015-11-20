@@ -1,11 +1,11 @@
-package SQL::Combine::Fetch::Many::XRef;
+package SQL::Combine::Action::Fetch::Many::XRef;
 use Moose;
 
-with 'SQL::Combine::Fetch';
+with 'SQL::Combine::Action::Fetch';
 
 has 'xref_query' => (
     is       => 'ro',
-    isa      => 'SQL::Combine::Table::Select | CodeRef',
+    isa      => 'SQL::Combine::Query::Select | CodeRef',
     required => 1,
 );
 
@@ -14,7 +14,8 @@ has '+query' => ( isa => 'CodeRef' );
 sub is_static { return 0 }
 
 sub execute {
-    my ($self, $dbm, $result) = @_;
+    my $self   = shift;
+    my $result = shift // {};
 
     my $xref_results;
     {
@@ -25,7 +26,12 @@ sub execute {
         my $sql  = $xref_query->to_sql;
         my @bind = $xref_query->to_bind;
 
-        my $dbh = $dbm->ro( $xref_query->table->schema );
+        # NOTE:
+        # We run the xref query on the
+        # same DBH, this might not be
+        # sensible, so think it through
+        # - SL
+        my $dbh = $self->schema->get_ro_dbh;
         my $sth = $dbh->prepare( $sql );
         $sth->execute( @bind );
 
@@ -42,7 +48,7 @@ sub execute {
     my $sql  = $query->to_sql;
     my @bind = $query->to_bind;
 
-    my $dbh = $dbm->ro( $query->table->schema );
+    my $dbh = $self->schema->get_ro_dbh;
     my $sth = $dbh->prepare( $sql );
     $sth->execute( @bind );
 
@@ -54,7 +60,7 @@ sub execute {
     my %relations = $self->all_relations;
     foreach my $hash ( @$hashes ) {
         foreach my $rel ( keys %relations ) {
-            $hash->{ $rel } = $relations{ $rel }->execute( $dbm, $hash );
+            $hash->{ $rel } = $relations{ $rel }->execute( $hash );
         }
     }
 

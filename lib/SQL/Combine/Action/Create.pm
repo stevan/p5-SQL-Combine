@@ -1,12 +1,12 @@
-package SQL::Combine::Create;
+package SQL::Combine::Action::Create;
 use Moose::Role;
 
-with 'SQL::Combine';
+with 'SQL::Combine::Action';
 
 has 'relations' => (
     traits   => [ 'Hash' ],
     is       => 'ro',
-    isa      => 'HashRef[SQL::Combine::Create]',
+    isa      => 'HashRef[SQL::Combine::Action::Create]',
     lazy     => 1,
     default  => sub { +{} },
     handles  => {

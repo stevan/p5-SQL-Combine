@@ -1,10 +1,10 @@
-package SQL::Combine::Table::Update;
+package SQL::Combine::Query::Update;
 use Moose;
 
 use Clone ();
 use SQL::Composer::Update;
 
-with 'SQL::Combine::Table::Query';
+with 'SQL::Combine::Query';
 
 has '_composer' => (
     is      => 'rw',
@@ -18,8 +18,8 @@ has '_composer' => (
     default => sub {
         my $self = shift;
         SQL::Composer::Update->new(
-            driver => $self->table->driver,
-            table  => $self->table->name,
+            driver => $self->driver,
+            table  => $self->table_name,
 
             values => Clone::clone($self->values),
             set    => Clone::clone($self->set),

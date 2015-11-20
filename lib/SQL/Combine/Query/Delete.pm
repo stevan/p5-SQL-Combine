@@ -1,10 +1,10 @@
-package SQL::Combine::Table::Delete;
+package SQL::Combine::Query::Delete;
 use Moose;
 
 use Clone ();
 use SQL::Composer::Delete;
 
-with 'SQL::Combine::Table::Query';
+with 'SQL::Combine::Query';
 
 has '_composer' => (
     is      => 'rw',
@@ -18,8 +18,8 @@ has '_composer' => (
     default => sub {
         my $self = shift;
         SQL::Composer::Delete->new(
-            driver => $self->table->driver,
-            from   => $self->table->name,
+            driver => $self->driver,
+            from   => $self->table_name,
 
             where  => Clone::clone($self->where),
 

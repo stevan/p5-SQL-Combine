@@ -1,13 +1,13 @@
-package SQL::Combine::Store::Many;
+package SQL::Combine::Action::Store::Many;
 use Moose;
 
-use SQL::Combine::Table::Update;
+use SQL::Combine::Query::Update;
 
-with 'SQL::Combine::Store';
+with 'SQL::Combine::Action::Store';
 
 has 'queries' => (
     is       => 'ro',
-    isa      => 'ArrayRef[SQL::Combine::Table::Update] | CodeRef',
+    isa      => 'ArrayRef[SQL::Combine::Query::Update] | CodeRef',
     required => 1,
 );
 
@@ -17,7 +17,8 @@ sub is_static {
 }
 
 sub execute {
-    my ($self, $dbm, $result) = @_;
+    my $self   = shift;
+    my $result = shift // {};
 
     my $queries = $self->queries;
     $queries = $queries->( $result )
@@ -29,7 +30,7 @@ sub execute {
         my $sql  = $query->to_sql;
         my @bind = $query->to_bind;
 
-        my $dbh = $dbm->rw( $query->table->schema );
+        my $dbh = $self->schema->get_rw_dbh;
         my $sth = $dbh->prepare( $sql );
         $sth->execute( @bind );
 

@@ -11,15 +11,15 @@ use Data::Dumper;
 use Test::More;
 
 BEGIN {
-    use_ok('SQL::Combine::DBH::Manager');
-
+    use_ok('SQL::Combine::Schema::Manager');
+    use_ok('SQL::Combine::Schema');
     use_ok('SQL::Combine::Table');
 
-    use_ok('SQL::Combine::Store::One');
-    use_ok('SQL::Combine::Store::Many');
+    use_ok('SQL::Combine::Action::Store::One');
+    use_ok('SQL::Combine::Action::Store::Many');
 
-    use_ok('SQL::Combine::Fetch::One');
-    use_ok('SQL::Combine::Fetch::Many');
+    use_ok('SQL::Combine::Action::Fetch::One');
+    use_ok('SQL::Combine::Action::Fetch::Many');
 }
 
 
@@ -34,41 +34,58 @@ foreach my $i ( 0, 1 ) {
     my $DRIVER = $DRIVERS[ $i ];
     my $DBH    = $DBHS[ $i ];
 
-    my $dbm = SQL::Combine::DBH::Manager->new(
-        schemas => {
-            user     => { rw => $DBH },
-            comments => { rw => $DBH },
-        }
+    my $m = SQL::Combine::Schema::Manager->new(
+        schemas => [
+            SQL::Combine::Schema->new(
+                name   => 'user',
+                dbh    => { rw => $DBH },
+                tables => [
+                    SQL::Combine::Table->new(
+                        name   => 'person',
+                        driver => $DRIVER,
+                    )
+                ]
+            ),
+            SQL::Combine::Schema->new(
+                name   => 'other',
+                dbh    => { rw => $DBH },
+                tables => [
+                    SQL::Combine::Table->new(
+                        name   => 'comment',
+                        driver => $DRIVER,
+                    ),
+                    SQL::Combine::Table->new(
+                        name   => 'article',
+                        driver => $DRIVER,
+                    )
+                ]
+            )
+        ]
     );
-    isa_ok($dbm, 'SQL::Combine::DBH::Manager');
 
-    my $Person = SQL::Combine::Table->new(
-        schema => 'user',
-        name   => 'person',
-        driver => $DRIVER,
-    );
+    my $User  = $m->get_schema_by_name('user');
+    my $Other = $m->get_schema_by_name('other');
 
-    my $Comment = SQL::Combine::Table->new(
-        schema => 'comments',
-        name   => 'comment',
-        driver => $DRIVER,
-    );
+    my $Person  = $User->get_table_by_name('person');
+    my $Comment = $Other->get_table_by_name('comment');
 
     subtest '... simple insert' => sub {
 
         my $PERSON_ID = 1;
 
-        my $new_person_query = SQL::Combine::Store::One->new(
-            query => $Person->update(
+        my $new_person_query = SQL::Combine::Action::Store::One->new(
+            schema => $User,
+            query  => $Person->update(
                 values => [ age  => 25 ],
                 where  => [ id => $PERSON_ID ],
             )
         );
-        isa_ok($new_person_query, 'SQL::Combine::Store::One');
+        isa_ok($new_person_query, 'SQL::Combine::Action::Store::One');
         ok($new_person_query->is_static, '... the query is static');
 
         $new_person_query->store_related(
-            comments => SQL::Combine::Store::Many->new(
+            comments => SQL::Combine::Action::Store::Many->new(
+                schema  => $Other,
                 queries => [
                     $Comment->update(
                         values => [ body   => '[REDACTED]' ],
@@ -82,7 +99,7 @@ foreach my $i ( 0, 1 ) {
             )
         );
 
-        my $new_person_info = $new_person_query->execute( $dbm, {} );
+        my $new_person_info = $new_person_query->execute;
 
         is_deeply(
             $new_person_info,
@@ -90,27 +107,27 @@ foreach my $i ( 0, 1 ) {
             '... got the expected update info'
         );
 
-        my $person_query = SQL::Combine::Fetch::One->new(
-            schema => 'user',
+        my $person_query = SQL::Combine::Action::Fetch::One->new(
+            schema => $User,
             query => $Person->select(
                 columns => [qw[ id name age ]],
                 where   => [ id => $PERSON_ID ],
             )
         );
-        isa_ok($person_query, 'SQL::Combine::Fetch::One');
+        isa_ok($person_query, 'SQL::Combine::Action::Fetch::One');
         ok($person_query->is_static, '... the query is static');
 
         $person_query->fetch_related(
-            comments => SQL::Combine::Fetch::Many->new(
-                schema => 'comments',
-                query => $Comment->select(
+            comments => SQL::Combine::Action::Fetch::Many->new(
+                schema => $Other,
+                query  => $Comment->select(
                     columns => [qw[ body ]],
                     where   => [ author => $PERSON_ID ],
                 )
             )
         );
 
-        my $bob = $person_query->execute( $dbm, {} );
+        my $bob = $person_query->execute;
 
         is_deeply(
             $bob,

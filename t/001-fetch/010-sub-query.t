@@ -11,13 +11,13 @@ use Data::Dumper;
 use Test::More;
 
 BEGIN {
-    use_ok('SQL::Combine::DBH::Manager');
-
+    use_ok('SQL::Combine::Schema::Manager');
+    use_ok('SQL::Combine::Schema');
     use_ok('SQL::Combine::Table');
 
-    use_ok('SQL::Combine::Fetch::One');
-    use_ok('SQL::Combine::Fetch::Many');
-    use_ok('SQL::Combine::Fetch::Many::XRef');
+    use_ok('SQL::Combine::Action::Fetch::One');
+    use_ok('SQL::Combine::Action::Fetch::Many');
+    use_ok('SQL::Combine::Action::Fetch::Many::XRef');
 }
 
 my @DRIVERS = ('sqlite', 'mysql');
@@ -31,49 +31,57 @@ foreach my $i ( 0, 1 ) {
     my $DRIVER = $DRIVERS[ $i ];
     my $DBH    = $DBHS[ $i ];
 
-    my $dbm = SQL::Combine::DBH::Manager->new(
-        schemas => {
-            __DEFAULT__ => { rw => $DBH },
-        }
+    my $m = SQL::Combine::Schema::Manager->new(
+        schemas => [
+            SQL::Combine::Schema->new(
+                name   => 'user',
+                dbh    => { rw => $DBH },
+                tables => [
+                    SQL::Combine::Table->new(
+                        name   => 'person',
+                        driver => $DRIVER,
+                    ),
+                    SQL::Combine::Table->new(
+                        name   => 'xref_article_author',
+                        driver => $DRIVER,
+                    ),
+                    SQL::Combine::Table->new(
+                        name   => 'comment',
+                        driver => $DRIVER,
+                    ),
+                    SQL::Combine::Table->new(
+                        name   => 'article',
+                        driver => $DRIVER,
+                    ),
+                ]
+            )
+        ]
     );
-    isa_ok($dbm, 'SQL::Combine::DBH::Manager');
 
-    my $Person = SQL::Combine::Table->new(
-        name   => 'person',
-        driver => $DRIVER,
-    );
-
-    my $Comment = SQL::Combine::Table->new(
-        name   => 'comment',
-        driver => $DRIVER,
-    );
-
-    my $Article = SQL::Combine::Table->new(
-        name   => 'article',
-        driver => $DRIVER,
-    );
-
-    my $Article2Person = SQL::Combine::Table->new(
-        name   => 'xref_article_author',
-        driver => $DRIVER,
-    );
+    my $User           = $m->get_schema_by_name('user');
+    my $Person         = $User->get_table_by_name('person');
+    my $Comment        = $User->get_table_by_name('comment');
+    my $Article        = $User->get_table_by_name('article');
+    my $Article2Person = $User->get_table_by_name('xref_article_author');
 
     subtest '... get person with comments and approvals' => sub {
 
         my $PERSON_ID = 1;
 
-        my $person_query = SQL::Combine::Fetch::One->new(
-            query => $Person->select(
+        my $person_query = SQL::Combine::Action::Fetch::One->new(
+            schema => $User,
+            query  => $Person->select(
                 columns => [qw[ id name age ]],
                 where   => [ id => $PERSON_ID ],
             )
         );
-        isa_ok($person_query, 'SQL::Combine::Fetch::One');
+        isa_ok($person_query, 'SQL::Combine::Action::Fetch::One');
         ok($person_query->is_static, '... the query is static');
 
         $person_query->fetch_related(
-            comments => SQL::Combine::Fetch::Many->new(
-                query => $Comment->select(
+            comments => SQL::Combine::Action::Fetch::Many->new(
+                schema => $User,
+                query  => $Comment->select(
                     columns => [qw[ id body ]],
                     where   => [ author => $PERSON_ID ],
                 )
@@ -81,16 +89,17 @@ foreach my $i ( 0, 1 ) {
         );
 
         $person_query->fetch_related(
-            approvals => SQL::Combine::Fetch::Many->new(
-                query => $Article->select(
+            approvals => SQL::Combine::Action::Fetch::Many->new(
+                schema => $User,
+                query  => $Article->select(
                     columns => [qw[ id title body created updated status ]],
                     where   => [ approver => $PERSON_ID ],
                 )
             )
         );
 
-        my $approvals = $person_query->relations->{approvals}->execute( $dbm, {} );
-        my $comments = $person_query->relations->{comments}->execute( $dbm, {} );
+        my $approvals = $person_query->relations->{approvals}->execute;
+        my $comments = $person_query->relations->{comments}->execute;
 
         is_deeply(
             $approvals,
@@ -130,18 +139,20 @@ foreach my $i ( 0, 1 ) {
 
         my $ARTICLE_ID = 1;
 
-        my $article_query = SQL::Combine::Fetch::One->new(
-            query => $Article->select(
+        my $article_query = SQL::Combine::Action::Fetch::One->new(
+            schema => $User,
+            query  => $Article->select(
                 columns => [qw[ id title body created updated status approver ]],
                 where   => [ id => $ARTICLE_ID ],
             )
         );
-        isa_ok($article_query, 'SQL::Combine::Fetch::One');
+        isa_ok($article_query, 'SQL::Combine::Action::Fetch::One');
         ok($article_query->is_static, '... the query is static');
 
         $article_query->fetch_related(
-            comments => SQL::Combine::Fetch::Many->new(
-                query => $Comment->select(
+            comments => SQL::Combine::Action::Fetch::Many->new(
+                schema => $User,
+                query  => $Comment->select(
                     columns => [qw[ id body ]],
                     where   => [ article => $ARTICLE_ID ],
                 )
@@ -149,8 +160,9 @@ foreach my $i ( 0, 1 ) {
         );
 
         $article_query->fetch_related(
-            approver => SQL::Combine::Fetch::One->new(
-                query => sub {
+            approver => SQL::Combine::Action::Fetch::One->new(
+                schema => $User,
+                query  => sub {
                     my $result = $_[0];
                     $Person->select(
                         columns => [qw[ id name age ]],
@@ -160,8 +172,8 @@ foreach my $i ( 0, 1 ) {
             )
         );
 
-        my $approver = $article_query->relations->{approver}->execute( $dbm, { approver => 1 } );
-        my $comments = $article_query->relations->{comments}->execute( $dbm, {} );
+        my $approver = $article_query->relations->{approver}->execute( { approver => 1 } );
+        my $comments = $article_query->relations->{comments}->execute;
 
         is_deeply(
             $approver,
@@ -188,17 +200,19 @@ foreach my $i ( 0, 1 ) {
 
         my $ARTICLE_ID = 1;
 
-        my $article_query = SQL::Combine::Fetch::One->new(
-            query => $Article->select(
+        my $article_query = SQL::Combine::Action::Fetch::One->new(
+            schema => $User,
+            query  => $Article->select(
                 columns => [qw[ id title body created updated status approver ]],
                 where   => [ id => $ARTICLE_ID ],
             )
         );
-        isa_ok($article_query, 'SQL::Combine::Fetch::One');
+        isa_ok($article_query, 'SQL::Combine::Action::Fetch::One');
         ok($article_query->is_static, '... the query is static');
 
         $article_query->fetch_related(
-            authors => SQL::Combine::Fetch::Many::XRef->new(
+            authors => SQL::Combine::Action::Fetch::Many::XRef->new(
+                schema     => $User,
                 xref_query => $Article2Person->select(
                     columns => [qw[ author ]],
                     where   => [ article => $ARTICLE_ID ],
@@ -213,7 +227,7 @@ foreach my $i ( 0, 1 ) {
             )
         );
 
-        my $authors = $article_query->relations->{authors}->execute( $dbm, {} );
+        my $authors = $article_query->relations->{authors}->execute;
 
         #warn Dumper $article;
 

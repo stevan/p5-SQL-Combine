@@ -1,13 +1,13 @@
-package SQL::Combine::Fetch;
+package SQL::Combine::Action::Fetch;
 use Moose::Role;
 
-use SQL::Combine::Table::Select;
+use SQL::Combine::Query::Select;
 
-with 'SQL::Combine';
+with 'SQL::Combine::Action';
 
 has 'query' => (
     is       => 'ro',
-    isa      => 'SQL::Combine::Table::Select | CodeRef',
+    isa      => 'SQL::Combine::Query::Select | CodeRef',
     required => 1,
 );
 
@@ -25,7 +25,7 @@ has 'inflator' => (
 has 'relations' => (
     traits   => [ 'Hash' ],
     is       => 'ro',
-    isa      => 'HashRef[SQL::Combine::Fetch]',
+    isa      => 'HashRef[SQL::Combine::Action::Fetch]',
     lazy     => 1,
     default  => sub { +{} },
     handles  => {

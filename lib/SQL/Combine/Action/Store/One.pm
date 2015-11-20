@@ -1,11 +1,11 @@
-package SQL::Combine::Store::One;
+package SQL::Combine::Action::Store::One;
 use Moose;
 
-with 'SQL::Combine::Store';
+with 'SQL::Combine::Action::Store';
 
 has 'query' => (
     is       => 'ro',
-    isa      => 'SQL::Combine::Table::Update | CodeRef',
+    isa      => 'SQL::Combine::Query::Update | CodeRef',
     required => 1,
 );
 
@@ -15,7 +15,8 @@ sub is_static {
 }
 
 sub execute {
-    my ($self, $dbm, $result) = @_;
+    my $self   = shift;
+    my $result = shift // {};
 
     my $query = $self->query;
     $query = $query->( $result )
@@ -24,7 +25,7 @@ sub execute {
     my $sql  = $query->to_sql;
     my @bind = $query->to_bind;
 
-    my $dbh = $dbm->rw( $query->table->schema );
+    my $dbh = $self->schema->get_rw_dbh;
     my $sth = $dbh->prepare( $sql );
     $sth->execute( @bind );
 
@@ -32,7 +33,7 @@ sub execute {
 
     my %relations = $self->all_relations;
     foreach my $rel ( keys %relations ) {
-        $hash->{ $rel } = $relations{ $rel }->execute( $dbm, $hash );
+        $hash->{ $rel } = $relations{ $rel }->execute( $hash );
     }
 
     return $hash;
