@@ -10,10 +10,16 @@ has 'relations' => (
     lazy     => 1,
     default  => sub { +{} },
     handles  => {
-        store_related => 'set',
+        _add_relation => 'set',
         all_relations => 'elements'
     }
 );
+
+sub store_related {
+    my ($self, $name, $action) = @_;
+    $self->_add_relation( $name, $action );
+    $self;
+}
 
 no Moose::Role; 1;
 
