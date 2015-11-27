@@ -28,6 +28,7 @@ sub BUILD {
 
     my $map = $self->_table_map;
     $map->{ $_->name } = $_ foreach @{ $params->{tables} };
+    return;
 }
 
 sub get_ro_dbh {
