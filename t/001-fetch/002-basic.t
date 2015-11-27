@@ -53,6 +53,15 @@ foreach my $i ( 0, 1 ) {
                     SQL::Combine::Table->new(
                         name   => 'article',
                         driver => $DRIVER,
+                        columns => [qw[
+                            id
+                            title
+                            body
+                            created
+                            updated
+                            status
+                            approver
+                        ]]
                     )
                 ]
             )
@@ -73,7 +82,7 @@ foreach my $i ( 0, 1 ) {
         my $article_query = SQL::Combine::Action::Fetch::One->new(
             schema => $Other,
             query  => $Article->select(
-                columns => [qw[ id title body created updated status approver ]],
+                columns => '*',
                 where   => [ id => $ARTICLE_ID ],
             )
         );
@@ -135,10 +144,7 @@ foreach my $i ( 0, 1 ) {
 
         my $article_query = SQL::Combine::Action::Fetch::One->new(
             schema => $Other,
-            query  => $Article->select(
-                columns => [qw[ id title body created updated status approver ]],
-                where   => [ id => $ARTICLE_ID ],
-            )
+            query  => $Article->select( where => [ id => $ARTICLE_ID ] )
         );
         isa_ok($article_query, 'SQL::Combine::Action::Fetch::One');
         ok($article_query->is_static, '... the query is static');

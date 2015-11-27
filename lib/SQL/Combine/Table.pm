@@ -10,9 +10,23 @@ use SQL::Combine::Query::Delete;
 has 'name'        => ( is => 'ro', isa => 'Str', required => 1 );
 has 'driver'      => ( is => 'ro', isa => 'Str', required => 1 );
 has 'primary_key' => ( is => 'ro', isa => 'Str', default => 'id' );
+has 'columns'     => (
+    is        => 'ro',
+    isa       => 'ArrayRef[Str]',
+    predicate => 'has_columns',
+);
 
 sub select :method {
     my ($self, %args) = @_;
+
+    if ( $self->has_columns ) {
+        $args{columns} = $self->columns
+            if (not exists $args{columns})
+            || (exists $args{columns}
+                    && (not ref $args{columns})
+                        && $args{columns} eq '*');
+    }
+
     return SQL::Combine::Query::Select->new(
         driver      => $self->driver,
         table_name  => $self->name,
