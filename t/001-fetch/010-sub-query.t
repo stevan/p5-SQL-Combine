@@ -59,10 +59,10 @@ foreach my $i ( 0, 1 ) {
     );
 
     my $User           = $m->get_schema_by_name('user');
-    my $Person         = $User->get_table_by_name('person');
-    my $Comment        = $User->get_table_by_name('comment');
-    my $Article        = $User->get_table_by_name('article');
-    my $Article2Person = $User->get_table_by_name('xref_article_author');
+    my $Person         = $User->table('person');
+    my $Comment        = $User->table('comment');
+    my $Article        = $User->table('article');
+    my $Article2Person = $User->table('xref_article_author');
 
     subtest '... get person with comments and approvals' => sub {
 

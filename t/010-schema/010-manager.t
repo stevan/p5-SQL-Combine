@@ -69,7 +69,7 @@ subtest '... testing simple schema-manager' => sub {
             foreach my $i ( 0 ... $#table_names ) {
                 my $name = $table_names[ $i ];
 
-                my $table = $schema->get_table_by_name( $name );
+                my $table = $schema->table( $name );
                 isa_ok($table, 'SQL::Combine::Table');
 
                 is($table, $tables[$i], '... our tables should match');

@@ -54,9 +54,9 @@ foreach my $i ( 0, 1 ) {
     );
 
     my $User           = $m->get_schema_by_name('user');
-    my $Person         = $User->get_table_by_name('person');
-    my $Comment        = $User->get_table_by_name('comment');
-    my $Article        = $User->get_table_by_name('article');
+    my $Person         = $User->table('person');
+    my $Comment        = $User->table('comment');
+    my $Article        = $User->table('article');
 
     subtest '... get article with all relations (raw)' => sub {
 

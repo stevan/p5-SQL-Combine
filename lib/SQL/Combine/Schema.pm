@@ -13,9 +13,9 @@ has '_table_map' => (
     lazy     => 1,
     default  => sub { +{} },
     handles  => {
-        'get_table_by_name' => 'get',
-        'get_table_names'   => 'keys',
-        'get_all_tables'    => 'values',
+        'table'    => 'get',
+        'get_table_names' => 'keys',
+        'get_all_tables'  => 'values',
     }
 );
 

@@ -92,9 +92,9 @@ foreach my $i ( 0, 1 ) {
     my $User  = $m->get_schema_by_name('user');
     my $Other = $m->get_schema_by_name('other');
 
-    my $Person  = $User->get_table_by_name('person');
-    my $Comment = $Other->get_table_by_name('comment');
-    my $Article = $Other->get_table_by_name('article');
+    my $Person  = $User->table('person');
+    my $Comment = $Other->table('comment');
+    my $Article = $Other->table('article');
 
     subtest '... get person with all relations (inflated)' => sub {
 
