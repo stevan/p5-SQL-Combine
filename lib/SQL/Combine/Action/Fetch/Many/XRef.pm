@@ -39,6 +39,7 @@ sub execute {
         return unless @rows;
 
         $xref_results = $xref_query->from_rows(@rows);
+        return unless @$xref_results;
     }
 
     my $query = $self->query;
