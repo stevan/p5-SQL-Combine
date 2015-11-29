@@ -63,8 +63,8 @@ subtest '... testing simple schema-manager' => sub {
 
         subtest '... testing the tables inside the schema' => sub {
 
-            my @table_names = $schema->get_table_names;
-            my @tables      = $schema->get_all_tables;
+            my @tables      = @{ $schema->tables };
+            my @table_names = map $_->name, @tables;
 
             foreach my $i ( 0 ... $#table_names ) {
                 my $name = $table_names[ $i ];

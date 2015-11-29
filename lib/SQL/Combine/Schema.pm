@@ -6,30 +6,23 @@ use SQL::Combine::Table;
 has 'name' => ( is => 'ro', isa => 'Str' );
 has 'dbh'  => ( is => 'ro', isa => 'HashRef', required => 1 );
 
+has 'tables' => (
+    is       => 'ro',
+    isa      => 'ArrayRef[SQL::Combine::Table]',
+    required => 1
+);
+
 has '_table_map' => (
     traits   => [ 'Hash' ],
     is       => 'ro',
     isa      => 'HashRef[SQL::Combine::Table]',
+    handles  => { 'table' => 'get' },
     lazy     => 1,
-    default  => sub { +{} },
-    handles  => {
-        'table'    => 'get',
-        'get_table_names' => 'keys',
-        'get_all_tables'  => 'values',
+    default  => sub {
+        my $self = $_[0];
+        return +{ map { $_->name => $_ } @{ $self->tables } }
     }
 );
-
-sub BUILD {
-    my ($self, $params) = @_;
-
-    confess "Invalid `tables` key was passed"
-        unless defined $params->{tables}
-            &&     ref $params->{tables} eq 'ARRAY';
-
-    my $map = $self->_table_map;
-    $map->{ $_->name } = $_ foreach @{ $params->{tables} };
-    return;
-}
 
 sub get_ro_dbh {
     my ($self) = @_;
