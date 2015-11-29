@@ -11,7 +11,6 @@ use Data::Dumper;
 use Test::More;
 
 BEGIN {
-    use_ok('SQL::Combine::Schema::Manager');
     use_ok('SQL::Combine::Schema');
     use_ok('SQL::Combine::Table');
 }
@@ -19,47 +18,44 @@ BEGIN {
 my $DBH    = 'DBI::db';
 my $DRIVER = 'MySQL';
 
-subtest '... testing simple schema-manager' => sub {
-    my $m = SQL::Combine::Schema::Manager->new(
-        schemas => [
-            SQL::Combine::Schema->new(
-                name   => 'user',
-                dbh    => { rw => $DBH },
-                tables => [
-                    SQL::Combine::Table->new(
-                        name   => 'person',
-                        driver => $DRIVER,
-                    )
-                ]
-            ),
-            SQL::Combine::Schema->new(
-                name   => 'other',
-                dbh    => { rw => $DBH },
-                tables => [
-                    SQL::Combine::Table->new(
-                        name   => 'comment',
-                        driver => $DRIVER,
-                    ),
-                    SQL::Combine::Table->new(
-                        name   => 'article',
-                        driver => $DRIVER,
-                    )
-                ]
-            )
-        ]
-    );
-    isa_ok($m, 'SQL::Combine::Schema::Manager');
+subtest '... testing simple schema' => sub {
 
-    my @schema_names = $m->get_schema_names;
-    my @schemas      = $m->get_all_schemas;
+    my @schemas = (
+        SQL::Combine::Schema->new(
+            name   => 'user',
+            dbh    => { rw => $DBH },
+            tables => [
+                SQL::Combine::Table->new(
+                    name   => 'person',
+                    driver => $DRIVER,
+                )
+            ]
+        ),
+        SQL::Combine::Schema->new(
+            name   => 'other',
+            dbh    => { rw => $DBH },
+            tables => [
+                SQL::Combine::Table->new(
+                    name   => 'comment',
+                    driver => $DRIVER,
+                ),
+                SQL::Combine::Table->new(
+                    name   => 'article',
+                    driver => $DRIVER,
+                )
+            ]
+        )
+    );
+
+    my @schema_names = map $_->name, @schemas;
 
     foreach my $i ( 0 ... $#schema_names ) {
-        my $name = $schema_names[ $i ];
+        my $name   = $schema_names[ $i ];
+        my $schema = $schemas[$i];
 
-        my $schema = $m->get_schema_by_name( $name );
         isa_ok($schema, 'SQL::Combine::Schema');
 
-        is($schema, $schemas[$i], '... our schemas should match');
+        is($schema->name, $name, '... our schemas name should match');
 
         subtest '... testing the tables inside the schema' => sub {
 

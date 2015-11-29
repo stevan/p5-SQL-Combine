@@ -11,7 +11,6 @@ use Data::Dumper;
 use Test::More;
 
 BEGIN {
-    use_ok('SQL::Combine::Schema::Manager');
     use_ok('SQL::Combine::Schema');
     use_ok('SQL::Combine::Table');
 
@@ -33,34 +32,27 @@ foreach my $i ( 0, 1 ) {
     my $DRIVER = $DRIVERS[ $i ];
     my $DBH    = $DBHS[ $i ];
 
-    my $m = SQL::Combine::Schema::Manager->new(
-        schemas => [
-            SQL::Combine::Schema->new(
-                name   => 'user',
-                dbh    => { rw => $DBH },
-                tables => [
-                    SQL::Combine::Table->new(
-                        name   => 'person',
-                        driver => $DRIVER,
-                    )
-                ]
-            ),
-            SQL::Combine::Schema->new(
-                name   => 'other',
-                dbh    => { rw => $DBH },
-                tables => [
-                    SQL::Combine::Table->new(
-                        name   => 'comment',
-                        driver => $DRIVER,
-                    )
-                ]
+    my $User = SQL::Combine::Schema->new(
+        name   => 'user',
+        dbh    => { rw => $DBH },
+        tables => [
+            SQL::Combine::Table->new(
+                name   => 'person',
+                driver => $DRIVER,
             )
         ]
     );
-    isa_ok($m, 'SQL::Combine::Schema::Manager');
 
-    my $User  = $m->get_schema_by_name('user');
-    my $Other = $m->get_schema_by_name('other');
+    my $Other = SQL::Combine::Schema->new(
+        name   => 'other',
+        dbh    => { rw => $DBH },
+        tables => [
+            SQL::Combine::Table->new(
+                name   => 'comment',
+                driver => $DRIVER,
+            )
+        ]
+    );
 
     my $Person  = $User->table('person');
     my $Comment = $Other->table('comment');

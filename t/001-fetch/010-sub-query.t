@@ -11,7 +11,6 @@ use Data::Dumper;
 use Test::More;
 
 BEGIN {
-    use_ok('SQL::Combine::Schema::Manager');
     use_ok('SQL::Combine::Schema');
     use_ok('SQL::Combine::Table');
 
@@ -31,34 +30,29 @@ foreach my $i ( 0, 1 ) {
     my $DRIVER = $DRIVERS[ $i ];
     my $DBH    = $DBHS[ $i ];
 
-    my $m = SQL::Combine::Schema::Manager->new(
-        schemas => [
-            SQL::Combine::Schema->new(
-                name   => 'user',
-                dbh    => { rw => $DBH },
-                tables => [
-                    SQL::Combine::Table->new(
-                        name   => 'person',
-                        driver => $DRIVER,
-                    ),
-                    SQL::Combine::Table->new(
-                        name   => 'xref_article_author',
-                        driver => $DRIVER,
-                    ),
-                    SQL::Combine::Table->new(
-                        name   => 'comment',
-                        driver => $DRIVER,
-                    ),
-                    SQL::Combine::Table->new(
-                        name   => 'article',
-                        driver => $DRIVER,
-                    ),
-                ]
-            )
+    my $User = SQL::Combine::Schema->new(
+        name   => 'user',
+        dbh    => { rw => $DBH },
+        tables => [
+            SQL::Combine::Table->new(
+                name   => 'person',
+                driver => $DRIVER,
+            ),
+            SQL::Combine::Table->new(
+                name   => 'xref_article_author',
+                driver => $DRIVER,
+            ),
+            SQL::Combine::Table->new(
+                name   => 'comment',
+                driver => $DRIVER,
+            ),
+            SQL::Combine::Table->new(
+                name   => 'article',
+                driver => $DRIVER,
+            ),
         ]
     );
 
-    my $User           = $m->get_schema_by_name('user');
     my $Person         = $User->table('person');
     my $Comment        = $User->table('comment');
     my $Article        = $User->table('article');
