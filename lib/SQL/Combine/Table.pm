@@ -8,6 +8,7 @@ use SQL::Combine::Query::Insert;
 use SQL::Combine::Query::Delete;
 
 has 'name'        => ( is => 'ro', isa => 'Str', required => 1 );
+has 'table_name'  => ( is => 'ro', isa => 'Str', lazy => 1, default => sub { $_[0]->name } );
 has 'driver'      => ( is => 'ro', isa => 'Str', required => 1 );
 has 'primary_key' => ( is => 'ro', isa => 'Str', default => 'id' );
 has 'columns'     => (
@@ -29,7 +30,7 @@ sub select :method {
 
     return SQL::Combine::Query::Select->new(
         driver      => $self->driver,
-        table_name  => $self->name,
+        table_name  => $self->table_name,
         primary_key => $self->primary_key,
         %args
     );
@@ -39,7 +40,7 @@ sub update {
     my ($self, %args) = @_;
     return SQL::Combine::Query::Update->new(
         driver      => $self->driver,
-        table_name  => $self->name,
+        table_name  => $self->table_name,
         primary_key => $self->primary_key,
         %args
     );
@@ -49,7 +50,7 @@ sub upsert {
     my ($self, %args) = @_;
     return SQL::Combine::Query::Upsert->new(
         driver      => $self->driver,
-        table_name  => $self->name,
+        table_name  => $self->table_name,
         primary_key => $self->primary_key,
         %args
     );
@@ -59,7 +60,7 @@ sub insert {
     my ($self, %args) = @_;
     return SQL::Combine::Query::Insert->new(
         driver      => $self->driver,
-        table_name  => $self->name,
+        table_name  => $self->table_name,
         primary_key => $self->primary_key,
         %args
     );
@@ -69,7 +70,7 @@ sub delete :method {
     my ($self, %args) = @_;
     return SQL::Combine::Query::Delete->new(
         driver      => $self->driver,
-        table_name  => $self->name,
+        table_name  => $self->table_name,
         primary_key => $self->primary_key,
         %args
     );

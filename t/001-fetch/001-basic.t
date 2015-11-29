@@ -67,8 +67,9 @@ foreach my $i ( 0, 1 ) {
                 dbh    => { rw => $DBH },
                 tables => [
                     SQL::Combine::Table->new(
-                        name   => 'person',
-                        driver => $DRIVER,
+                        name       => 'Person',
+                        table_name => 'person',
+                        driver     => $DRIVER,
                     )
                 ]
             ),
@@ -77,12 +78,14 @@ foreach my $i ( 0, 1 ) {
                 dbh    => { rw => $DBH },
                 tables => [
                     SQL::Combine::Table->new(
-                        name   => 'comment',
-                        driver => $DRIVER,
+                        name       => 'Comment',
+                        table_name => 'comment',
+                        driver     => $DRIVER,
                     ),
                     SQL::Combine::Table->new(
-                        name   => 'article',
-                        driver => $DRIVER,
+                        name       => 'Article',
+                        table_name => 'article',
+                        driver     => $DRIVER,
                     )
                 ]
             )
@@ -92,9 +95,9 @@ foreach my $i ( 0, 1 ) {
     my $User  = $m->get_schema_by_name('user');
     my $Other = $m->get_schema_by_name('other');
 
-    my $Person  = $User->table('person');
-    my $Comment = $Other->table('comment');
-    my $Article = $Other->table('article');
+    my $Person  = $User->table('Person');
+    my $Comment = $Other->table('Comment');
+    my $Article = $Other->table('Article');
 
     subtest '... get person with all relations (inflated)' => sub {
 
