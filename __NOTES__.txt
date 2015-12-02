@@ -1,0 +1,6 @@
+
+== TODO:
+
+- Find Or Create style action
+- Fetch Related that feeds into a Create or Store
+    - perhaps this is just a Create::XRef thing
