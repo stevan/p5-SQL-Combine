@@ -1,7 +1,6 @@
 
 == TODO:
 
-- Find Or Create style action
 - Fetch Related that feeds into a Create or Store
     - perhaps this is just a Create::XRef thing
 
@@ -12,6 +11,6 @@
 - Improve Join syntax
     - much of this can be auto-generated from metadata
 
-- Table's need to understand foriegn keys (maybe)
+- Table's need to understand foreign keys (maybe)
     - this can just be suggestions, not tightly enforced
     - hmm, maybe this relation can be specified in the schema?!?!?!
