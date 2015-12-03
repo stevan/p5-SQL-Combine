@@ -14,3 +14,4 @@
 
 - Table's need to understand foriegn keys (maybe)
     - this can just be suggestions, not tightly enforced
+    - hmm, maybe this relation can be specified in the schema?!?!?!
