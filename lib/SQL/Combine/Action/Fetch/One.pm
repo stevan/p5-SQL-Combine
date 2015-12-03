@@ -21,10 +21,10 @@ sub execute {
     my $sth = $dbh->prepare( $sql );
     $sth->execute( @bind );
 
-    my ($rows) = $sth->fetchall_arrayref;
-    return unless @$rows;
+    my ($row) = $sth->fetchall_arrayref;
+    return unless @$row;
 
-    my ($hash) = @{ $query->from_rows($rows) };
+    my ($hash) = @{ $query->from_rows($row) };
 
     my %relations = $self->all_relations;
     foreach my $rel ( keys %relations ) {
