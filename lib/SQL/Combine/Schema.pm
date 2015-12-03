@@ -20,7 +20,12 @@ has '_table_map' => (
     lazy     => 1,
     default  => sub {
         my $self = $_[0];
-        return +{ map { $_->name => $_ } @{ $self->tables } }
+        my %map;
+        foreach my $table ( @{ $self->tables } ) {
+            $table->_associate_with_schema( $self );
+            $map{ $table->name } = $table;
+        }
+        return \%map;
     }
 );
 

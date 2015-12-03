@@ -11,10 +11,19 @@ has 'name'        => ( is => 'ro', isa => 'Str', required => 1 );
 has 'table_name'  => ( is => 'ro', isa => 'Str', lazy => 1, default => sub { $_[0]->name } );
 has 'driver'      => ( is => 'ro', isa => 'Str', required => 1 );
 has 'primary_key' => ( is => 'ro', isa => 'Str', default => 'id' );
-has 'columns'     => (
+
+has 'columns' => (
     is        => 'ro',
     isa       => 'ArrayRef[Str]',
     predicate => 'has_columns',
+);
+
+has 'schema' => (
+    is        => 'ro',
+    isa       => 'SQL::Combine::Schema',
+    writer    => '_associate_with_schema',
+    predicate => 'has_schema',
+    weak_ref  => 1,
 );
 
 sub select :method {
