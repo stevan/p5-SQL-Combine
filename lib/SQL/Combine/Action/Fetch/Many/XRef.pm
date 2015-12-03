@@ -3,9 +3,9 @@ use Moose;
 
 with 'SQL::Combine::Action::Fetch';
 
-has 'xref_query' => (
+has 'xref' => (
     is       => 'ro',
-    isa      => 'SQL::Combine::Query::Select | CodeRef',
+    does     => 'SQL::Combine::Action::Fetch',
     required => 1,
 );
 
@@ -17,40 +17,9 @@ sub execute {
     my $self   = shift;
     my $result = shift // {};
 
-    my $xref_results;
-    {
-        my $xref_query = $self->xref_query;
-        $xref_query = $xref_query->( $result )
-            if ref $xref_query eq 'CODE';
-
-        my $sql  = $xref_query->to_sql;
-        my @bind = $xref_query->to_bind;
-
-        $ENV{'SQL_COMBINE_DEBUG_SHOW_SQL'}
-            && print STDERR '[',__PACKAGE__,'] SQL: "',$sql,'" BIND: (',(join ', ' => @bind),")\n";
-
-        # NOTE:
-        # We run the xref query on the
-        # same DBH, this might not be
-        # sensible, so think it through
-        # - SL
-        my $dbh = $self->schema->get_ro_dbh;
-        my $sth = $dbh->prepare( $sql );
-        $sth->execute( @bind );
-
-        my @rows = $sth->fetchall_arrayref;
-        return unless @rows;
-
-        $xref_results = $xref_query->from_rows(@rows);
-        return unless @$xref_results;
-    }
-
-    my $query = $self->query;
-    $query = $query->( $xref_results )
-        if ref $query eq 'CODE';
-
-    my $sql  = $query->to_sql;
-    my @bind = $query->to_bind;
+    my $query = $self->query->( $self->xref->execute );
+    my $sql   = $query->to_sql;
+    my @bind  = $query->to_bind;
 
     $ENV{'SQL_COMBINE_DEBUG_SHOW_SQL'}
         && print STDERR '[',__PACKAGE__,'] SQL: "',$sql,'" BIND: (',(join ', ' => @bind),")\n";
