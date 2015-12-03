@@ -26,6 +26,17 @@ has 'schema' => (
     weak_ref  => 1,
 );
 
+sub fully_qualify_column_name {
+    my ($self, $column_name) = @_;
+    # TODO: actually check if column name is valid ...
+    return join '.' => ( $self->table_name, $column_name );
+}
+
+sub fully_qualify_primary_key {
+    my ($self) = @_;
+    return $self->fully_qualify_column_name( $self->primary_key );
+}
+
 sub select :method {
     my ($self, %args) = @_;
 
