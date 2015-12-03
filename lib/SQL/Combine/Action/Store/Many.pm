@@ -26,17 +26,7 @@ sub execute {
 
     my @rows;
     foreach my $query ( @$queries ) {
-
-        my $sql  = $query->to_sql;
-        my @bind = $query->to_bind;
-
-        $ENV{'SQL_COMBINE_DEBUG_SHOW_SQL'}
-            && print STDERR '[',__PACKAGE__,'] SQL: "',$sql,'" BIND: (',(join ', ' => @bind),")\n";
-
-        my $dbh = $self->schema->get_rw_dbh;
-        my $sth = $dbh->prepare( $sql );
-        $sth->execute( @bind );
-
+        my $sth = $self->execute_query( $query );
         push @rows => $sth->rows;
     }
 

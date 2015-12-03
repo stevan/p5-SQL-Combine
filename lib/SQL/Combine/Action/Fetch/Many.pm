@@ -3,29 +3,14 @@ use Moose;
 
 with 'SQL::Combine::Action::Fetch';
 
-sub prepare_query {
-    my ($self, $result) = @_;
-    my $query = $self->query;
-    $query = $query->( $result ) if ref $query eq 'CODE';
-    return $query;
-}
-
 sub execute {
     my $self   = shift;
     my $result = shift // {};
 
     my $query = $self->prepare_query( $result );
-    my $sql   = $query->to_sql;
-    my @bind  = $query->to_bind;
+    my $sth   = $self->execute_query( $query  );
+    my @rows  = $sth->fetchall_arrayref;
 
-    $ENV{'SQL_COMBINE_DEBUG_SHOW_SQL'}
-        && print STDERR '[',__PACKAGE__,'] SQL: "',$sql,'" BIND: (',(join ', ' => @bind),")\n";
-
-    my $dbh = $self->schema->get_ro_dbh;
-    my $sth = $dbh->prepare( $sql );
-    $sth->execute( @bind );
-
-    my @rows = $sth->fetchall_arrayref;
     return unless @rows;
 
     my $hashes = $query->from_rows(@rows);

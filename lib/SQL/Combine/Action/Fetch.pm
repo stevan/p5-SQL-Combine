@@ -40,6 +40,13 @@ sub fetch_related {
     $self;
 }
 
+sub prepare_query {
+    my ($self, $result) = @_;
+    my $query = $self->query;
+    $query = $query->( $result ) if ref $query eq 'CODE';
+    return $query;
+}
+
 no Moose::Role; 1;
 
 __END__

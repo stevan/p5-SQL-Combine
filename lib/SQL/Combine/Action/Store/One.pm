@@ -14,24 +14,18 @@ sub is_static {
     return ref $self->query ne 'CODE';
 }
 
+sub prepare_query {
+    my ($self, $result) = @_;
+    my $query = $self->query;
+    $query = $query->( $result ) if ref $query eq 'CODE';
+    return $query;
+}
+
 sub execute {
     my $self   = shift;
     my $result = shift // {};
 
-    my $query = $self->query;
-    $query = $query->( $result )
-        if ref $query eq 'CODE';
-
-    my $sql  = $query->to_sql;
-    my @bind = $query->to_bind;
-
-    $ENV{'SQL_COMBINE_DEBUG_SHOW_SQL'}
-        && print STDERR '[',__PACKAGE__,'] SQL: "',$sql,'" BIND: (',(join ', ' => @bind),")\n";
-
-    my $dbh = $self->schema->get_rw_dbh;
-    my $sth = $dbh->prepare( $sql );
-    $sth->execute( @bind );
-
+    my $sth  = $self->execute_query( $self->prepare_query( $result ) );
     my $hash = { rows => $sth->rows };
 
     my %relations = $self->all_relations;
