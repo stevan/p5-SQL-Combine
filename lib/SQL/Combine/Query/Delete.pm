@@ -12,7 +12,6 @@ has '_composer' => (
     handles => [qw[
         to_sql
         to_bind
-        from_rows
     ]],
     lazy    => 1,
     default => sub {
