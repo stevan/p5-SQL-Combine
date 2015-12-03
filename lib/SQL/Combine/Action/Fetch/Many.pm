@@ -3,16 +3,20 @@ use Moose;
 
 with 'SQL::Combine::Action::Fetch';
 
+sub prepare_query {
+    my ($self, $result) = @_;
+    my $query = $self->query;
+    $query = $query->( $result ) if ref $query eq 'CODE';
+    return $query;
+}
+
 sub execute {
     my $self   = shift;
     my $result = shift // {};
 
-    my $query = $self->query;
-    $query = $query->( $result )
-        if ref $query eq 'CODE';
-
-    my $sql  = $query->to_sql;
-    my @bind = $query->to_bind;
+    my $query = $self->prepare_query( $result );
+    my $sql   = $query->to_sql;
+    my @bind  = $query->to_bind;
 
     $ENV{'SQL_COMBINE_DEBUG_SHOW_SQL'}
         && print STDERR '[',__PACKAGE__,'] SQL: "',$sql,'" BIND: (',(join ', ' => @bind),")\n";
