@@ -4,3 +4,13 @@
 - Find Or Create style action
 - Fetch Related that feeds into a Create or Store
     - perhaps this is just a Create::XRef thing
+
+- Add statements
+    - Create Table
+    - Load Data Infile
+
+- Improve Join syntax
+    - much of this can be auto-generated from metadata
+
+- Table's need to understand foriegn keys (maybe)
+    - this can just be suggestions, not tightly enforced
