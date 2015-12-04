@@ -14,8 +14,8 @@ has '+query' => ( isa => 'CodeRef' );
 sub is_static { return 0 }
 
 sub prepare_query {
-    my ($self, undef) = @_;
-    return $self->query->( $self->xref->execute );
+    my ($self, $results) = @_;
+    return $self->query->( $self->xref->execute( $results ) );
 }
 
 __PACKAGE__->meta->make_immutable;
