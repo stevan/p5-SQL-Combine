@@ -9,6 +9,11 @@ has 'or_create' => (
     required => 1,
 );
 
+sub is_static {
+    my $self = shift;
+    $self->or_create->is_static || $self->SUPER::is_static;
+}
+
 sub execute {
     my $self   = shift;
     my $result = shift // {};
