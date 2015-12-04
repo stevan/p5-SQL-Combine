@@ -81,7 +81,7 @@ foreach my $i ( 0, 1 ) {
         isa_ok($article_query, 'SQL::Combine::Action::Fetch::One');
         ok($article_query->is_static, '... the query is static');
 
-        $article_query->fetch_related(
+        $article_query->relates_to(
             comments => SQL::Combine::Action::Fetch::Many->new(
                 schema => $Other,
                 query  => $Comment->select(
@@ -91,7 +91,7 @@ foreach my $i ( 0, 1 ) {
             )
         );
 
-        $article_query->fetch_related(
+        $article_query->relates_to(
             approver => SQL::Combine::Action::Fetch::One->new(
                 schema => $User,
                 query  => sub {
@@ -152,7 +152,7 @@ foreach my $i ( 0, 1 ) {
             }
         );
 
-        $approver_query->fetch_related(
+        $approver_query->relates_to(
             comments => SQL::Combine::Action::Fetch::Many->new(
                 schema => $Other,
                 query  => sub {
@@ -171,9 +171,9 @@ foreach my $i ( 0, 1 ) {
         # This overrides the approver (id)
         # in the original result set
         # - SL
-        $article_query->fetch_related( approver => $approver_query );
+        $article_query->relates_to( approver => $approver_query );
 
-        $article_query->fetch_related(
+        $article_query->relates_to(
             comments => SQL::Combine::Action::Fetch::Many->new(
                 schema => $Other,
                 query  => $Comment->select(
@@ -241,7 +241,7 @@ foreach my $i ( 0, 1 ) {
         # This overrides the author (id)
         # in the original result set
         # - SL
-        $comments_query->fetch_related(
+        $comments_query->relates_to(
             author => SQL::Combine::Action::Fetch::One->new(
                 schema => $User,
                 query  => sub {
@@ -254,7 +254,7 @@ foreach my $i ( 0, 1 ) {
             )
         );
 
-        $article_query->fetch_related( comments => $comments_query );
+        $article_query->relates_to( comments => $comments_query );
 
         my $article = $article_query->execute;
 

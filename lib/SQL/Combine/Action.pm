@@ -3,14 +3,32 @@ use Moose::Role;
 
 use SQL::Combine::Schema;
 
+requires 'execute';
+requires 'is_static';
+
 has 'schema' => (
     is       => 'ro',
     isa      => 'SQL::Combine::Schema',
     required => 1
 );
 
-requires 'execute';
-requires 'is_static';
+has 'relations' => (
+    traits   => [ 'Hash' ],
+    is       => 'ro',
+    isa      => 'HashRef[SQL::Combine::Action]',
+    lazy     => 1,
+    default  => sub { +{} },
+    handles  => {
+        _add_relation => 'set',
+        all_relations => 'elements'
+    }
+);
+
+sub relates_to {
+    my ($self, $name, $action) = @_;
+    $self->_add_relation( $name, $action );
+    $self;
+}
 
 sub execute_query {
     my ($self, $query) = @_;

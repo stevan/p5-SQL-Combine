@@ -93,7 +93,7 @@ foreach my $i ( 0, 1 ) {
         );
 
         # this is the person fetching part of above
-        $authors_query->fetch_related(
+        $authors_query->relates_to(
             person => SQL::Combine::Action::Fetch::One->new(
                 schema => $User,
                 query  => sub {
@@ -108,9 +108,9 @@ foreach my $i ( 0, 1 ) {
         isa_ok($authors_query, 'SQL::Combine::Action::Fetch::Many');
         ok($authors_query->is_static, '... the query is static');
 
-        $article_query->fetch_related( authors => $authors_query );
+        $article_query->relates_to( authors => $authors_query );
 
-        $article_query->fetch_related(
+        $article_query->relates_to(
             comments => SQL::Combine::Action::Fetch::Many->new(
                 schema => $User,
                 query  => $Comment->select(
@@ -120,7 +120,7 @@ foreach my $i ( 0, 1 ) {
             )
         );
 
-        $article_query->fetch_related(
+        $article_query->relates_to(
             approver => SQL::Combine::Action::Fetch::One->new(
                 schema => $User,
                 query  => sub {
@@ -207,9 +207,9 @@ foreach my $i ( 0, 1 ) {
         isa_ok($authors_query, 'SQL::Combine::Action::Fetch::Many::XRef');
         ok(!$authors_query->is_static, '... the query is not static');
 
-        $article_query->fetch_related( authors => $authors_query );
+        $article_query->relates_to( authors => $authors_query );
 
-        $article_query->fetch_related(
+        $article_query->relates_to(
             comments => SQL::Combine::Action::Fetch::Many->new(
                 schema => $User,
                 query  => $Comment->select(
@@ -219,7 +219,7 @@ foreach my $i ( 0, 1 ) {
             )
         );
 
-        $article_query->fetch_related(
+        $article_query->relates_to(
             approver => SQL::Combine::Action::Fetch::One->new(
                 schema => $User,
                 query  => sub {

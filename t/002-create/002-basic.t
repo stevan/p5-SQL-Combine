@@ -74,7 +74,7 @@ foreach my $i ( 0, 1 ) {
     isa_ok($article_query, 'SQL::Combine::Action::Fetch::One');
     ok($article_query->is_static, '... the query is static');
 
-    $article_query->fetch_related(
+    $article_query->relates_to(
         comments => SQL::Combine::Action::Fetch::Many->new(
             schema => $Other,
             query  => $Comment->select(
@@ -122,7 +122,7 @@ foreach my $i ( 0, 1 ) {
         isa_ok($new_person_query, 'SQL::Combine::Action::Create::One');
         ok($new_person_query->is_static, '... the query is static');
 
-        $new_person_query->create_related(
+        $new_person_query->relates_to(
             comments => SQL::Combine::Action::Create::Many->new(
                 schema  => $Other,
                 queries => [
@@ -171,7 +171,7 @@ foreach my $i ( 0, 1 ) {
         isa_ok($person_query, 'SQL::Combine::Action::Fetch::One');
         ok($person_query->is_static, '... the query is static');
 
-        $person_query->fetch_related(
+        $person_query->relates_to(
             comments => SQL::Combine::Action::Fetch::Many->new(
                 schema => $Other,
                 query  => $Comment->select(
