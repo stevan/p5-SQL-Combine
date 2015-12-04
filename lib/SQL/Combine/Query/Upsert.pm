@@ -27,6 +27,8 @@ has '_composer' => (
 
 has values => ( is => 'ro' );
 
+sub is_idempotent { 0 }
+
 sub locate_id {
     my $self   = shift;
     my %values = ref $self->values eq 'HASH' ? %{ $self->values } : @{ $self->values };

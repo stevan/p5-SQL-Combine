@@ -51,6 +51,8 @@ has offset     => ( is => 'ro' );
 
 has for_update => ( is => 'ro' );
 
+sub is_idempotent { 1 }
+
 sub locate_id {
     my $self  = shift;
     my %where = ref $self->where eq 'HASH' ? %{ $self->where } : @{ $self->where };

@@ -14,6 +14,7 @@ has 'id'   => (
 );
 
 requires 'locate_id';
+requires 'is_idempotent';
 
 no Moose::Role; 1;
 

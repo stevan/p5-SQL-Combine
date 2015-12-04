@@ -32,6 +32,8 @@ has where  => ( is => 'ro' );
 has limit  => ( is => 'ro' );
 has offset => ( is => 'ro' );
 
+sub is_idempotent { 0 }
+
 sub locate_id {
     my $self  = shift;
     my %where = ref $self->where eq 'HASH' ? %{ $self->where } : @{ $self->where };

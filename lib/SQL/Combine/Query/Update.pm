@@ -39,6 +39,8 @@ has where  => ( is => 'ro' );
 has limit  => ( is => 'ro' );
 has offset => ( is => 'ro' );
 
+sub is_idempotent { 0 }
+
 sub locate_id {
     my $self = shift;
 
