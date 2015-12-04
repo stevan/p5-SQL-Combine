@@ -42,7 +42,7 @@ sub execute_query {
     $ENV{'SQL_COMBINE_DEBUG_SHOW_SQL'}
         && print STDERR '[',__PACKAGE__,'] SQL: "',$sql,'" BIND: (',(join ', ' => @bind),")\n";
 
-    my $dbh = $self->schema->get_rw_dbh;
+    my $dbh = $self->schema->get_dbh_for_query( $query );
     my $sth = $dbh->prepare( $sql );
     $sth->execute( @bind );
 

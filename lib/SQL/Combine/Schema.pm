@@ -29,6 +29,15 @@ has '_table_map' => (
     }
 );
 
+sub get_dbh_for_query {
+    my ($self, $query) = @_;
+
+    (blessed $query && $query->does('SQL::Combine::Query'))
+        || confess 'The `query` object must implement the SQL::Combine::Query role';
+
+    return $query->is_idempotent ? $self->get_ro_dbh : $self->get_rw_dbh;
+}
+
 sub get_ro_dbh {
     my ($self) = @_;
     return $self->dbh->{ro}
