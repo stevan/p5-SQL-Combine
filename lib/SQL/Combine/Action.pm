@@ -33,8 +33,8 @@ sub relates_to {
 sub execute_query {
     my ($self, $query) = @_;
 
-    (blessed $query && $query->can('to_sql') && $query->can('to_bind'))
-        || confess 'The query object must implement both the `to_sql` and the `to_bind` method';
+    (blessed $query && $query->does('SQL::Combine::Query'))
+        || confess 'The `query` object must implement the SQL::Combine::Query role';
 
     my $sql  = $query->to_sql;
     my @bind = $query->to_bind;
