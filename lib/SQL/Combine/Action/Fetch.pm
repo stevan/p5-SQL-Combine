@@ -2,12 +2,13 @@ package SQL::Combine::Action::Fetch;
 use Moose::Role;
 
 use SQL::Combine::Query::Select;
+use SQL::Combine::Query::Select::RawSQL;
 
 with 'SQL::Combine::Action';
 
 has 'query' => (
     is       => 'ro',
-    isa      => 'SQL::Combine::Query::Select | CodeRef',
+    isa      => 'SQL::Combine::Query::Select | SQL::Combine::Query::Select::RawSQL | CodeRef',
     required => 1,
 );
 
