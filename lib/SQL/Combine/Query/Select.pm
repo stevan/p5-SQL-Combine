@@ -12,7 +12,6 @@ has '_composer' => (
     handles => [qw[
         to_sql
         to_bind
-        from_rows
     ]],
     lazy    => 1,
     default => sub {
@@ -38,18 +37,34 @@ has '_composer' => (
     }
 );
 
-has join       => ( is => 'ro' );
-has columns    => ( is => 'ro' );
-has where      => ( is => 'ro' );
+has join         => ( is => 'ro' );
+has columns      => ( is => 'ro' );
+has where        => ( is => 'ro' );
 
-has group_by   => ( is => 'ro' );
-has order_by   => ( is => 'ro' );
-has having     => ( is => 'ro' );
+has group_by     => ( is => 'ro' );
+has order_by     => ( is => 'ro' );
+has having       => ( is => 'ro' );
 
-has limit      => ( is => 'ro' );
-has offset     => ( is => 'ro' );
+has limit        => ( is => 'ro' );
+has offset       => ( is => 'ro' );
 
-has for_update => ( is => 'ro' );
+has for_update   => ( is => 'ro' );
+
+has row_inflator => ( is => 'ro', isa => 'CodeRef', predicate => 'has_row_inflator' );
+
+sub from_rows {
+    my ($self, @rows) = @_;
+    if ( $self->has_row_inflator ) {
+        my @results;
+        foreach my $row ( @rows ) {
+            push @results => $self->row_inflator( $row );
+        }
+        return \@results;
+    }
+    else {
+        $self->_composer->from_rows( @rows )
+    }
+}
 
 sub is_idempotent { 1 }
 
