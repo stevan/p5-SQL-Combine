@@ -5,11 +5,18 @@ use SQL::Combine::Query::Insert;
 use SQL::Combine::Query::Upsert;
 use SQL::Combine::Query::Update;
 
+use SQL::Combine::Query::Insert::RawSQL;
+
 with 'SQL::Combine::Action::Create';
 
 has 'queries' => (
     is       => 'ro',
-    isa      => 'ArrayRef[ SQL::Combine::Query::Insert | SQL::Combine::Query::Upsert | SQL::Combine::Query::Update ] | CodeRef',
+    isa      => 'ArrayRef[' . (join ' | ' => qw[
+                    SQL::Combine::Query::Insert
+                    SQL::Combine::Query::Upsert
+                    SQL::Combine::Query::Update
+                    SQL::Combine::Query::Insert::RawSQL
+                ]) . '] | CodeRef',
     required => 1,
 );
 
