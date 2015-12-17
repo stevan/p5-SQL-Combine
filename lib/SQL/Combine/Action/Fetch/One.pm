@@ -11,7 +11,8 @@ sub execute {
     my $sth   = $self->execute_query( $query  );
     my ($row) = $sth->fetchall_arrayref;
 
-    return unless @$row;
+    # we return a scalar, always
+    return undef unless @$row;
 
     my ($hash) = @{ $query->from_rows($row) };
 
