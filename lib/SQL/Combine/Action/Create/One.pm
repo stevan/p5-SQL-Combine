@@ -47,7 +47,7 @@ sub execute {
 
     my $relations = $self->execute_relations( $hash );
 
-    return { %$hash, %$relations };
+    return $self->merge_results_and_relations( $hash, $relations );
 }
 
 __PACKAGE__->meta->make_immutable;

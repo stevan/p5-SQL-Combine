@@ -18,8 +18,8 @@ sub execute {
     my $relations = $self->execute_relations( $hash );
 
     my $obj = $self->has_inflator
-        ? $self->inflator->( { %$hash, %$relations } )
-        : { %$hash, %$relations };
+        ? $self->inflator->( $self->merge_results_and_relations( $hash, $relations ) )
+        : $self->merge_results_and_relations( $hash, $relations );
 
     return $obj;
 }

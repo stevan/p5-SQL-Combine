@@ -40,6 +40,19 @@ sub execute_relations {
     return \%results;
 }
 
+sub merge_results_and_relations {
+    my ($self, $results, $relations) = @_;
+    if ( ref $results eq 'HASH' &&  ref $relations eq 'HASH' ) {
+        return { %$results, %$relations };
+    }
+    elsif ( ref $results eq 'ARRAY' &&  ref $relations eq 'HASH' ) {
+        return { __RESULTS__ => $results, %$relations };
+    }
+    else {
+        die "I have no idea what to do with $results and $relations";
+    }
+}
+
 sub execute_query {
     my ($self, $query) = @_;
 

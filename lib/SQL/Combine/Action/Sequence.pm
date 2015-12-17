@@ -45,12 +45,11 @@ sub execute {
         push @results => $x; # otherwise it doesn't push an undef on here
     }
 
-    my $hash      = { __RESULTS__ => \@results };
-    my $relations = $self->execute_relations( $hash );
+    my $relations = $self->execute_relations( \@results );
 
     my $obj = $self->has_inflator
-        ? $self->inflator->( { %$hash, %$relations } )
-        : { %$hash, %$relations };
+        ? $self->inflator->( $self->merge_results_and_relations( \@results, $relations ) )
+        : $self->merge_results_and_relations( \@results, $relations );
 
     return $obj;
 }

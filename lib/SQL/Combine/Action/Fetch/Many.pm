@@ -18,7 +18,7 @@ sub execute {
     my @merged;
     foreach my $hash ( @$hashes ) {
         my $relations = $self->execute_relations( $hash );
-        push @merged => { %$hash, %$relations };
+        push @merged => $self->merge_results_and_relations( $hash, $relations );
     }
 
     my $objs = $self->has_inflator ? $self->inflator->( \@merged ) : \@merged;
