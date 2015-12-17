@@ -15,11 +15,13 @@ sub execute {
 
     my $hashes = $query->from_rows(@rows);
 
+    my @merged;
     foreach my $hash ( @$hashes ) {
-        $self->execute_relations( $hash );
+        my $relations = $self->execute_relations( $hash );
+        push @merged => { %$hash, %$relations };
     }
 
-    my $objs = $self->has_inflator ? $self->inflator->( $hashes ) : $hashes;
+    my $objs = $self->has_inflator ? $self->inflator->( \@merged ) : \@merged;
 
     return $objs;
 }

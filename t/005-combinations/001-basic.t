@@ -99,6 +99,10 @@ foreach my $i ( 0, 1 ) {
         my $comments_query = SQL::Combine::Action::Create::Many->new(
             schema  => $User,
             queries => sub {
+                # XXX
+                # I am really not a fan of this __RESULTS__ thing
+                # look for some way to improve on that
+                # - SL
                 my ($article, $jim, $max_id) = @{ $_[0]->{__RESULTS__} };
                 return +[
                     map $Comment->insert(

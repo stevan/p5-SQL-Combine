@@ -27,9 +27,10 @@ sub execute {
 
     my $sth  = $self->execute_query( $self->prepare_query( $result ) );
     my $hash = { rows => $sth->rows };
-    $self->execute_relations( $hash );
 
-    return $hash;
+    my $relations = $self->execute_relations( $hash );
+
+    return { %$hash, %$relations };
 }
 
 __PACKAGE__->meta->make_immutable;

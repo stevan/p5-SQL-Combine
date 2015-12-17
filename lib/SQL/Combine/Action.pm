@@ -32,11 +32,12 @@ sub relates_to {
 
 sub execute_relations {
     my ($self, $hash) = @_;
+    my %results;
     my %relations = $self->all_relations;
     foreach my $rel ( keys %relations ) {
-        $hash->{ $rel } = $relations{ $rel }->execute( $hash );
+        $results{ $rel } = $relations{ $rel }->execute( $hash );
     }
-    return $hash;
+    return \%results;
 }
 
 sub execute_query {

@@ -45,9 +45,9 @@ sub execute {
 
     my $hash = { id => $last_insert_id };
 
-    $self->execute_relations( $hash );
+    my $relations = $self->execute_relations( $hash );
 
-    return $hash;
+    return { %$hash, %$relations };
 }
 
 __PACKAGE__->meta->make_immutable;
