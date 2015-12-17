@@ -32,6 +32,12 @@ sub execute {
 
     my $hash = { rows => \@rows };
 
+    # TODO;
+    # Think about relations here, are they sensible?
+    # If they are not sensible then we have to think
+    # about how to turn them off.
+    # - SL
+
     return $hash;
 }
 
