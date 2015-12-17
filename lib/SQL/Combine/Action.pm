@@ -36,6 +36,7 @@ sub execute_relations {
     foreach my $rel ( keys %relations ) {
         $hash->{ $rel } = $relations{ $rel }->execute( $hash );
     }
+    return $hash;
 }
 
 sub execute_query {
