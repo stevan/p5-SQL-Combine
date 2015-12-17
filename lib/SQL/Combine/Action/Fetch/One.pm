@@ -15,12 +15,11 @@ sub execute {
     return undef unless @$row;
 
     my ($hash) = @{ $query->from_rows($row) };
-
-    my $relations = $self->execute_relations( $hash );
+    my $rels = $self->execute_relations( $hash );
 
     my $obj = $self->has_inflator
-        ? $self->inflator->( $self->merge_results_and_relations( $hash, $relations ) )
-        : $self->merge_results_and_relations( $hash, $relations );
+        ? $self->inflator->( $self->merge_results_and_relations( $hash, $rels ) )
+        : $self->merge_results_and_relations( $hash, $rels );
 
     return $obj;
 }

@@ -44,10 +44,9 @@ sub execute {
                                             ->last_insert_id( undef, undef, undef, undef, {} );
 
     my $hash = { id => $last_insert_id };
+    my $rels = $self->execute_relations( $hash );
 
-    my $relations = $self->execute_relations( $hash );
-
-    return $self->merge_results_and_relations( $hash, $relations );
+    return $self->merge_results_and_relations( $hash, $rels );
 }
 
 __PACKAGE__->meta->make_immutable;

@@ -45,11 +45,11 @@ sub execute {
         push @results => $x; # otherwise it doesn't push an undef on here
     }
 
-    my $relations = $self->execute_relations( \@results );
+    my $rels = $self->execute_relations( \@results );
 
     my $obj = $self->has_inflator
-        ? $self->inflator->( $self->merge_results_and_relations( \@results, $relations ) )
-        : $self->merge_results_and_relations( \@results, $relations );
+        ? $self->inflator->( $self->merge_results_and_relations( \@results, $rels ) )
+        : $self->merge_results_and_relations( \@results, $rels );
 
     return $obj;
 }
