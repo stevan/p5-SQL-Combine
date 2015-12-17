@@ -30,6 +30,14 @@ sub relates_to {
     $self;
 }
 
+sub execute_relations {
+    my ($self, $hash) = @_;
+    my %relations = $self->all_relations;
+    foreach my $rel ( keys %relations ) {
+        $hash->{ $rel } = $relations{ $rel }->execute( $hash );
+    }
+}
+
 sub execute_query {
     my ($self, $query) = @_;
 

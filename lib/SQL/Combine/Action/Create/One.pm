@@ -45,10 +45,7 @@ sub execute {
 
     my $hash = { id => $last_insert_id };
 
-    my %relations = $self->all_relations;
-    foreach my $rel ( keys %relations ) {
-        $hash->{ $rel } = $relations{ $rel }->execute( $hash );
-    }
+    $self->execute_relations( $hash );
 
     return $hash;
 }

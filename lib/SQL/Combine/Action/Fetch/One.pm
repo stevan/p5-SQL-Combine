@@ -15,10 +15,7 @@ sub execute {
 
     my ($hash) = @{ $query->from_rows($row) };
 
-    my %relations = $self->all_relations;
-    foreach my $rel ( keys %relations ) {
-        $hash->{ $rel } = $relations{ $rel }->execute( $hash );
-    }
+    $self->execute_relations( $hash );
 
     my $obj = $self->has_inflator ? $self->inflator->( $hash ) : $hash;
 

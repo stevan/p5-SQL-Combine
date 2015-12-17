@@ -27,11 +27,7 @@ sub execute {
 
     my $sth  = $self->execute_query( $self->prepare_query( $result ) );
     my $hash = { rows => $sth->rows };
-
-    my %relations = $self->all_relations;
-    foreach my $rel ( keys %relations ) {
-        $hash->{ $rel } = $relations{ $rel }->execute( $hash );
-    }
+    $self->execute_relations( $hash );
 
     return $hash;
 }
