@@ -9,6 +9,8 @@ use SQL::Combine::Query::Insert::RawSQL;
 
 with 'SQL::Combine::Action::Create';
 
+has 'id_key' => ( is => 'ro', isa => 'Str', default => 'id' );
+
 has 'queries' => (
     is       => 'ro',
     isa      => 'ArrayRef[' . (join ' | ' => qw[
@@ -37,9 +39,10 @@ sub execute {
     foreach my $query ( @$queries ) {
         $self->execute_query( $query );
 
-        my $last_insert_id = $query->id // $self->schema
-                                                ->get_rw_dbh
-                                                ->last_insert_id( undef, undef, undef, undef, {} );
+        my $last_insert_id = $query->locate_id( $self->id_key )
+            // $self->schema
+                    ->get_rw_dbh
+                    ->last_insert_id( undef, undef, undef, undef, {} );
 
         push @ids => $last_insert_id;
     }
