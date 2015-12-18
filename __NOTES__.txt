@@ -1,18 +1,4 @@
 
-== PRIMARY KEY REFACTOR
-
-Create Actions need to ask the ->id of the query
-
-If we remove this, then all the locate_id stuff can go away in Query
-
-Perhaps locate_id can be kept, but it would take a primary key as an
-argument and then go about finding it if needed.
-
-But locate_id is the builder for &id, which is the problem right now.
-
-The other change is that Query needs to stop taking the driver,
-table_name, primary_key thing and just take the Table object maybe.
-
 == TODO:
 
 - Fetch Related that feeds into a Create or Store
