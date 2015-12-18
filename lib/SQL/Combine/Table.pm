@@ -10,7 +10,6 @@ use SQL::Combine::Query::Delete;
 has 'name'        => ( is => 'ro', isa => 'Str', required => 1 );
 has 'table_name'  => ( is => 'ro', isa => 'Str', lazy => 1, default => sub { $_[0]->name } );
 has 'driver'      => ( is => 'ro', isa => 'Str', required => 1 );
-has 'primary_key' => ( is => 'ro', isa => 'Str', default => 'id' );
 
 has 'columns' => (
     is        => 'ro',
@@ -32,11 +31,6 @@ sub fully_qualify_column_name {
     return join '.' => ( $self->table_name, $column_name );
 }
 
-sub fully_qualify_primary_key {
-    my ($self) = @_;
-    return $self->fully_qualify_column_name( $self->primary_key );
-}
-
 sub select :method {
     my ($self, %args) = @_;
 
@@ -49,9 +43,8 @@ sub select :method {
     }
 
     return SQL::Combine::Query::Select->new(
-        driver      => $self->driver,
-        table_name  => $self->table_name,
-        primary_key => $self->primary_key,
+        driver     => $self->driver,
+        table_name => $self->table_name,
         %args
     );
 }
@@ -59,9 +52,8 @@ sub select :method {
 sub update {
     my ($self, %args) = @_;
     return SQL::Combine::Query::Update->new(
-        driver      => $self->driver,
-        table_name  => $self->table_name,
-        primary_key => $self->primary_key,
+        driver     => $self->driver,
+        table_name => $self->table_name,
         %args
     );
 }
@@ -69,9 +61,8 @@ sub update {
 sub upsert {
     my ($self, %args) = @_;
     return SQL::Combine::Query::Upsert->new(
-        driver      => $self->driver,
-        table_name  => $self->table_name,
-        primary_key => $self->primary_key,
+        driver     => $self->driver,
+        table_name => $self->table_name,
         %args
     );
 }
@@ -79,9 +70,8 @@ sub upsert {
 sub insert {
     my ($self, %args) = @_;
     return SQL::Combine::Query::Insert->new(
-        driver      => $self->driver,
-        table_name  => $self->table_name,
-        primary_key => $self->primary_key,
+        driver     => $self->driver,
+        table_name => $self->table_name,
         %args
     );
 }
@@ -89,9 +79,8 @@ sub insert {
 sub delete :method {
     my ($self, %args) = @_;
     return SQL::Combine::Query::Delete->new(
-        driver      => $self->driver,
-        table_name  => $self->table_name,
-        primary_key => $self->primary_key,
+        driver     => $self->driver,
+        table_name => $self->table_name,
         %args
     );
 }

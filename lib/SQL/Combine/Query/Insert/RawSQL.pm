@@ -3,6 +3,8 @@ use Moose;
 
 with 'SQL::Combine::Query';
 
+has 'id' => ( is => 'ro', predicate => 'has_id' );
+
 has 'sql' => (
     reader   => 'to_sql',
     isa      => 'Str',
@@ -19,8 +21,11 @@ has 'bind' => (
 
 sub is_idempotent { 0 }
 
-has '+id' => ( required => 1 ); # make this required now ...
-sub locate_id { return } # this is never going to get called ...
+sub locate_id {
+    my ($self, $key) = @_;
+    return $self->id if $self->has_id;
+    return;
+}
 
 __PACKAGE__->meta->make_immutable;
 

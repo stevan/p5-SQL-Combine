@@ -69,9 +69,9 @@ sub from_rows {
 sub is_idempotent { 1 }
 
 sub locate_id {
-    my $self  = shift;
+    my ($self, $key) = @_;
     my %where = ref $self->where eq 'HASH' ? %{ $self->where } : @{ $self->where };
-    if ( my $id = $where{ $self->primary_key } ) {
+    if ( my $id = $where{ $key } ) {
         return $id;
     }
     return;

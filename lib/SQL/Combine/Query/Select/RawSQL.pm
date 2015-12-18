@@ -3,6 +3,8 @@ use Moose;
 
 with 'SQL::Combine::Query';
 
+has 'id' => ( is => 'ro', predicate => 'has_id' );
+
 has 'sql' => (
     reader   => 'to_sql',
     isa      => 'Str',
@@ -24,15 +26,12 @@ has 'row_inflator' => (
 );
 
 sub is_idempotent { 1 }
-sub locate_id     { return } # XXX: not sure what we should do here - SL
-# NOTE:
-# So the locate_id method is actually
-# the builder for the id attribute,
-# which is a Maybe[Num], so we can
-# simply return `undef` from this
-# and but if we actually care, we
-# should define `id` via the constructor
-# - SL
+
+sub locate_id {
+    my ($self, $key) = @_;
+    return $self->id if $self->has_id;
+    return;
+}
 
 sub from_rows {
     my ($self, @rows) = @_;

@@ -42,18 +42,16 @@ has offset => ( is => 'ro' );
 sub is_idempotent { 0 }
 
 sub locate_id {
-    my $self = shift;
-
-    my $primary_key = $self->primary_key;
+    my ($self, $key) = @_;
 
     my $values = $self->values || $self->set;
     my %values = ref $values eq 'HASH' ? %$values : @$values;
-    if ( my $id = $values{ $primary_key } ) {
+    if ( my $id = $values{ $key } ) {
         return $id;
     }
     else {
         my %where = ref $self->where eq 'HASH' ? %{ $self->where } : @{ $self->where };
-        if ( my $id = $where{ $primary_key } ) {
+        if ( my $id = $where{ $key } ) {
             return $id;
         }
     }

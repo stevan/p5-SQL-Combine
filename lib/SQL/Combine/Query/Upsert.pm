@@ -30,9 +30,9 @@ has values => ( is => 'ro' );
 sub is_idempotent { 0 }
 
 sub locate_id {
-    my $self   = shift;
+    my ($self, $key) = @_;
     my %values = ref $self->values eq 'HASH' ? %{ $self->values } : @{ $self->values };
-    if ( my $id = $values{ $self->primary_key } ) {
+    if ( my $id = $values{ $key } ) {
         return $id;
     }
     return;
