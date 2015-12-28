@@ -8,7 +8,7 @@ with 'SQL::Combine::Action';
 
 has 'query' => (
     is       => 'ro',
-    isa      => 'SQL::Combine::Query::Select | SQL::Combine::Query::Select::RawSQL | CodeRef',
+    isa      => 'Object | CodeRef',
     required => 1,
 );
 

@@ -7,7 +7,7 @@ with 'SQL::Combine::Action::Store';
 
 has 'queries' => (
     is       => 'ro',
-    isa      => 'ArrayRef[SQL::Combine::Query::Update] | CodeRef',
+    isa      => 'ArrayRef | CodeRef',
     required => 1,
 );
 

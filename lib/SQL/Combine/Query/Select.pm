@@ -1,56 +1,78 @@
 package SQL::Combine::Query::Select;
-use Moose;
+use strict;
+use warnings;
 
+use Carp  'confess';
 use Clone ();
+
 use SQL::Composer::Select;
 
-with 'SQL::Combine::Query';
+use parent 'SQL::Combine::Query';
 
-has '_composer' => (
-    is      => 'rw',
-    isa     => 'SQL::Composer::Select',
-    handles => [qw[
-        to_sql
-        to_bind
-    ]],
-    lazy    => 1,
-    default => sub {
-        my $self = shift;
-        SQL::Composer::Select->new(
-            driver     => $self->driver,
-            from       => $self->table_name,
-            join       => Clone::clone($self->join),
+sub new {
+    my ($class, %args) = @_;
 
-            columns    => Clone::clone($self->columns),
+    my $self = $class->SUPER::new( %args );
 
-            where      => Clone::clone($self->where),
+    $self->{join}       = $args{join};
+    $self->{columns}    = $args{columns};
+    $self->{where}      = $args{where};
+    $self->{group_by}   = $args{group_by};
+    $self->{order_by}   = $args{order_by};
+    $self->{having}     = $args{having};
+    $self->{limit}      = $args{limit};
+    $self->{offset}     = $args{offset};
+    $self->{for_update} = $args{for_update};
 
-            group_by   => Clone::clone($self->group_by),
-            having     => Clone::clone($self->having),
-            order_by   => Clone::clone($self->order_by),
-
-            limit      => Clone::clone($self->limit),
-            offset     => Clone::clone($self->offset),
-
-            for_update => Clone::clone($self->for_update),
-        )
+    if ( exists $args{row_inflator} ) {
+        (ref $args{row_inflator} eq 'CODE')
+            || confess 'The `row_inflator` parameter is required and must be a CODE ref';
+        $self->{row_inflator} = $args{row_inflator};
     }
-);
 
-has join         => ( is => 'ro' );
-has columns      => ( is => 'ro' );
-has where        => ( is => 'ro' );
+    return $self;
+}
 
-has group_by     => ( is => 'ro' );
-has order_by     => ( is => 'ro' );
-has having       => ( is => 'ro' );
+sub to_sql  { $_[0]->_composer->to_sql  }
+sub to_bind { $_[0]->_composer->to_bind }
 
-has limit        => ( is => 'ro' );
-has offset       => ( is => 'ro' );
+sub _composer {
+    my ($self) = @_;
+    $self->{_composer} //= SQL::Composer::Select->new(
+        driver     => $self->driver,
+        from       => $self->table_name,
+        join       => Clone::clone($self->{join}),
 
-has for_update   => ( is => 'ro' );
+        columns    => Clone::clone($self->{columns}),
 
-has row_inflator => ( is => 'ro', isa => 'CodeRef', predicate => 'has_row_inflator' );
+        where      => Clone::clone($self->{where}),
+
+        group_by   => Clone::clone($self->{group_by}),
+        having     => Clone::clone($self->{having}),
+        order_by   => Clone::clone($self->{order_by}),
+
+        limit      => Clone::clone($self->{limit}),
+        offset     => Clone::clone($self->{offset}),
+
+        for_update => Clone::clone($self->{for_update}),
+    );
+}
+
+sub join       { $_[0]->{join}    }
+sub columns    { $_[0]->{columns} }
+sub where      { $_[0]->{where}   }
+
+sub group_by   { $_[0]->{group_by} }
+sub order_by   { $_[0]->{order_by} }
+sub having     { $_[0]->{having}   }
+
+sub limit      { $_[0]->{limit}  }
+sub offset     { $_[0]->{offset} }
+
+sub for_update { $_[0]->{for_update} }
+
+sub row_inflator     {    $_[0]->{row_inflator} }
+sub has_row_inflator { !! $_[0]->{row_inflator} }
 
 sub from_rows {
     my ($self, @rows) = @_;
@@ -77,9 +99,7 @@ sub locate_id {
     return;
 }
 
-__PACKAGE__->meta->make_immutable;
-
-no Moose; 1;
+1;
 
 __END__
 

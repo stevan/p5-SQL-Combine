@@ -5,7 +5,7 @@ with 'SQL::Combine::Action::Store';
 
 has 'query' => (
     is       => 'ro',
-    isa      => 'SQL::Combine::Query::Update | CodeRef',
+    isa      => 'Object | CodeRef',
     required => 1,
 );
 

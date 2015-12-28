@@ -1,36 +1,44 @@
 package SQL::Combine::Query::Delete;
-use Moose;
+use strict;
+use warnings;
 
 use Clone ();
+
 use SQL::Composer::Delete;
 
-with 'SQL::Combine::Query';
+use parent 'SQL::Combine::Query';
 
-has '_composer' => (
-    is      => 'rw',
-    isa     => 'SQL::Composer::Delete',
-    handles => [qw[
-        to_sql
-        to_bind
-    ]],
-    lazy    => 1,
-    default => sub {
-        my $self = shift;
-        SQL::Composer::Delete->new(
-            driver => $self->driver,
-            from   => $self->table_name,
+sub new {
+    my ($class, %args) = @_;
 
-            where  => Clone::clone($self->where),
+    my $self = $class->SUPER::new( %args );
 
-            limit  => Clone::clone($self->limit),
-            offset => Clone::clone($self->offset),
-        )
-    }
-);
+    $self->{where}  = $args{where};
+    $self->{limit}  = $args{limit};
+    $self->{offset} = $args{offset};
 
-has where  => ( is => 'ro' );
-has limit  => ( is => 'ro' );
-has offset => ( is => 'ro' );
+    return $self;
+}
+
+sub to_sql  { $_[0]->_composer->to_sql  }
+sub to_bind { $_[0]->_composer->to_bind }
+
+sub _composer {
+    my ($self) = @_;
+    $self->{_composer} //= SQL::Composer::Delete->new(
+        driver => $self->driver,
+        from   => $self->table_name,
+
+        where  => Clone::clone($self->{where}),
+
+        limit  => Clone::clone($self->{limit}),
+        offset => Clone::clone($self->{offset}),
+    );
+}
+
+sub where  { $_[0]->{where}  }
+sub limit  { $_[0]->{limit}  }
+sub offset { $_[0]->{offset} }
 
 sub is_idempotent { 0 }
 
@@ -43,9 +51,7 @@ sub locate_id {
     return;
 }
 
-__PACKAGE__->meta->make_immutable;
-
-no Moose; 1;
+1;
 
 __END__
 

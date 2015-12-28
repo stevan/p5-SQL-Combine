@@ -13,12 +13,7 @@ has 'id_key' => ( is => 'ro', isa => 'Str', default => 'id' );
 
 has 'queries' => (
     is       => 'ro',
-    isa      => 'ArrayRef[' . (join ' | ' => qw[
-                    SQL::Combine::Query::Insert
-                    SQL::Combine::Query::Upsert
-                    SQL::Combine::Query::Update
-                    SQL::Combine::Query::Insert::RawSQL
-                ]) . '] | CodeRef',
+    isa      => 'ArrayRef | CodeRef',
     required => 1,
 );
 

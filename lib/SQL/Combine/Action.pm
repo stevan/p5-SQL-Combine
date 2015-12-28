@@ -15,7 +15,7 @@ has 'schema' => (
 has 'relations' => (
     traits   => [ 'Hash' ],
     is       => 'ro',
-    isa      => 'HashRef[SQL::Combine::Action]',
+    isa      => 'HashRef',
     lazy     => 1,
     default  => sub { +{} },
     handles  => {
@@ -56,7 +56,7 @@ sub merge_results_and_relations {
 sub execute_query {
     my ($self, $query) = @_;
 
-    (blessed $query && $query->does('SQL::Combine::Query'))
+    (blessed $query && $query->isa('SQL::Combine::Query'))
         || confess 'The `query` object must implement the SQL::Combine::Query role';
 
     my $sql  = $query->to_sql;

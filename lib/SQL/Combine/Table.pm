@@ -1,5 +1,9 @@
 package SQL::Combine::Table;
-use Moose;
+use strict;
+use warnings;
+
+use Carp         'confess';
+use Scalar::Util 'blessed';
 
 use SQL::Combine::Query::Select;
 use SQL::Combine::Query::Update;
@@ -7,23 +11,49 @@ use SQL::Combine::Query::Upsert;
 use SQL::Combine::Query::Insert;
 use SQL::Combine::Query::Delete;
 
-has 'name'        => ( is => 'ro', isa => 'Str', required => 1 );
-has 'table_name'  => ( is => 'ro', isa => 'Str', lazy => 1, default => sub { $_[0]->name } );
-has 'driver'      => ( is => 'ro', isa => 'Str', required => 1 );
+sub new {
+    my ($class, %args) = @_;
 
-has 'columns' => (
-    is        => 'ro',
-    isa       => 'ArrayRef[Str]',
-    predicate => 'has_columns',
-);
+    ($args{name})
+        || confess 'You must supply a `name` parameter';
+    ($args{driver})
+        || confess 'You must supply a `driver` parameter';
 
-has 'schema' => (
-    is        => 'ro',
-    isa       => 'SQL::Combine::Schema',
-    writer    => '_associate_with_schema',
-    predicate => 'has_schema',
-    weak_ref  => 1,
-);
+    if ( exists $args{columns} ) {
+        (ref $args{columns} eq 'ARRAY')
+            || confess 'The `columns` parameter must be an ARRAY ref';
+    }
+
+    if ( exists $args{schema} ) {
+        (blessed $args{schema} && $args{schema}->isa('SQL::Combine::Schema'))
+            || confess 'The `schema` parameter must be an instance of `SQL::Combine::Schema`';
+    }
+
+    bless {
+        name       => $args{name},
+        driver     => $args{driver},
+        table_name => $args{table_name},
+        columns    => $args{columns},
+        schema     => $args{schema},
+    } => $class;
+}
+
+sub name   { $_[0]->{name}   }
+sub driver { $_[0]->{driver} }
+
+sub table_name { $_[0]->{table_name} //= $_[0]->{name} }
+
+sub columns     {    $_[0]->{columns} }
+sub has_columns { !! $_[0]->{columns} }
+
+sub schema     {    $_[0]->{schema} }
+sub has_schema { !! $_[0]->{schema} }
+
+sub _associate_with_schema {
+    my ($self, $schema) = @_;
+    Scalar::Util::weaken( $schema );
+    $self->{schema} = $schema;
+}
 
 sub fully_qualify_column_name {
     my ($self, $column_name) = @_;
@@ -85,9 +115,7 @@ sub delete :method {
     );
 }
 
-__PACKAGE__->meta->make_immutable;
-
-no Moose; 1;
+1;
 
 __END__
 

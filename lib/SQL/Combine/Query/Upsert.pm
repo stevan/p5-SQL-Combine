@@ -1,31 +1,38 @@
 package SQL::Combine::Query::Upsert;
-use Moose;
+use strict;
+use warnings;
 
 use Clone ();
+
 use SQL::Composer::Upsert;
 
-with 'SQL::Combine::Query';
+use parent 'SQL::Combine::Query';
 
-has '_composer' => (
-    is      => 'rw',
-    isa     => 'SQL::Composer::Upsert',
-    handles => [qw[
-        to_sql
-        to_bind
-    ]],
-    lazy    => 1,
-    default => sub {
-        my $self = shift;
-        SQL::Composer::Upsert->new(
-            driver => $self->driver,
-            into   => $self->table_name,
+sub new {
+    my ($class, %args) = @_;
 
-            values => Clone::clone($self->values),
-        )
-    }
-);
+    my $self = $class->SUPER::new( %args );
 
-has values => ( is => 'ro' );
+    $self->{values} = $args{values};
+
+    return $self;
+}
+
+sub to_sql  { $_[0]->_composer->to_sql  }
+sub to_bind { $_[0]->_composer->to_bind }
+
+sub _composer {
+    my ($self) = @_;
+    $self->{_composer} //= SQL::Composer::Upsert->new(
+        driver => $self->driver,
+        into   => $self->table_name,
+
+        values => Clone::clone($self->{values}),
+    );
+}
+
+sub values { $_[0]->{values} }
+sub where  { $_[0]->{where}  }
 
 sub is_idempotent { 0 }
 
@@ -38,9 +45,7 @@ sub locate_id {
     return;
 }
 
-__PACKAGE__->meta->make_immutable;
-
-no Moose; 1;
+1;
 
 __END__
 

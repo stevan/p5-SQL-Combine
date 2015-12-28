@@ -1,12 +1,16 @@
 package SQL::Combine::Query;
-use Moose::Role;
+use strict;
+use warnings;
 
-with 'SQL::Combine::Statement';
+use parent 'SQL::Combine::Statement';
 
-requires 'locate_id';
-requires 'is_idempotent';
+sub locate_id;
+sub is_idempotent;
 
-no Moose::Role; 1;
+sub to_sql;
+sub to_bind;
+
+1;
 
 __END__
 

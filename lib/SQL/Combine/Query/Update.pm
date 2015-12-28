@@ -1,43 +1,54 @@
 package SQL::Combine::Query::Update;
-use Moose;
+use strict;
+use warnings;
 
 use Clone ();
+
 use SQL::Composer::Update;
 
-with 'SQL::Combine::Query';
+use parent 'SQL::Combine::Query';
 
-has '_composer' => (
-    is      => 'rw',
-    isa     => 'SQL::Composer::Update',
-    handles => [qw[
-        to_sql
-        to_bind
-    ]],
-    lazy    => 1,
-    default => sub {
-        my $self = shift;
-        SQL::Composer::Update->new(
-            driver => $self->driver,
-            table  => $self->table_name,
+sub new {
+    my ($class, %args) = @_;
 
-            values => Clone::clone($self->values),
-            set    => Clone::clone($self->set),
+    my $self = $class->SUPER::new( %args );
 
-            where  => Clone::clone($self->where),
+    $self->{values} = $args{values};
+    $self->{set}    = $args{set};
+    $self->{where}  = $args{where};
+    $self->{limit}  = $args{limit};
+    $self->{offset} = $args{offset};
 
-            limit  => Clone::clone($self->limit),
-            offset => Clone::clone($self->offset),
-        )
-    }
-);
+    return $self;
+}
 
-has values => ( is => 'ro' );
-has set    => ( is => 'ro' );
+sub to_sql  { $_[0]->_composer->to_sql  }
+sub to_bind { $_[0]->_composer->to_bind }
 
-has where  => ( is => 'ro' );
+sub _composer {
+    my ($self) = @_;
+    $self->{_composer} //= SQL::Composer::Update->new(
+        driver => $self->driver,
+        table  => $self->table_name,
 
-has limit  => ( is => 'ro' );
-has offset => ( is => 'ro' );
+        values => Clone::clone($self->{values}),
+        set    => Clone::clone($self->{set}),
+
+        where  => Clone::clone($self->{where}),
+
+        limit  => Clone::clone($self->{limit}),
+        offset => Clone::clone($self->{offset}),
+    );
+}
+
+
+sub values { $_[0]->{values} }
+sub set    { $_[0]->{set}    }
+
+sub where  { $_[0]->{where}  }
+
+sub limit  { $_[0]->{limit}  }
+sub offset { $_[0]->{offset} }
 
 sub is_idempotent { 0 }
 
@@ -58,9 +69,7 @@ sub locate_id {
     return;
 }
 
-__PACKAGE__->meta->make_immutable;
-
-no Moose; 1;
+1;
 
 __END__
 

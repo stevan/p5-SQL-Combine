@@ -1,29 +1,41 @@
 package SQL::Combine::Query::Select::RawSQL;
-use Moose;
+use strict;
+use warnings;
 
-with 'SQL::Combine::Query';
+use Carp 'confess';
 
-has 'id' => ( is => 'ro', predicate => 'has_id' );
+use parent 'SQL::Combine::Query';
 
-has 'sql' => (
-    reader   => 'to_sql',
-    isa      => 'Str',
-    required => 1,
-);
+sub new {
+    my ($class, %args) = @_;
 
-has 'bind' => (
-    traits   => [ 'Array' ],
-    is       => 'bare',
-    isa      => 'ArrayRef',
-    required => 1,
-    handles  => { 'to_bind' => 'elements' }
-);
+    my $self = $class->SUPER::new( %args );
 
-has 'row_inflator' => (
-    is      => 'ro',
-    isa     => 'CodeRef',
-    default => 1
-);
+    $self->{id}  = $args{id};
+    $self->{sql} = $args{sql} || confess 'You must supply a `sql` parameter';
+
+    ($args{bind} && ref $args{bind} eq 'ARRAY')
+        || confess 'The `bind` parameter is required and must be an ARRAY ref';
+
+    $self->{bind} = $args{bind};
+
+    if ( exists $args{row_inflator} ) {
+        (ref $args{row_inflator} eq 'CODE')
+            || confess 'The `row_inflator` parameter is required and must be a CODE ref';
+        $self->{row_inflator} = $args{row_inflator};
+    }
+
+    return $self;
+}
+
+sub id     {    $_[0]->{id} }
+sub has_id { !! $_[0]->{id} }
+
+sub to_sql  {    $_[0]->{sql}    }
+sub to_bind { @{ $_[0]->{bind} } }
+
+sub row_inflator     {    $_[0]->{row_inflator} }
+sub has_row_inflator { !! $_[0]->{row_inflator} }
 
 sub is_idempotent { 1 }
 
@@ -44,9 +56,7 @@ sub from_rows {
     return \@result;
 }
 
-__PACKAGE__->meta->make_immutable;
-
-no Moose; 1;
+1;
 
 __END__
 

@@ -12,13 +12,7 @@ has 'id_key' => ( is => 'ro', isa => 'Str', default => 'id' );
 
 has 'query' => (
     is       => 'ro',
-    isa      => (join ' | ' => qw[
-                    SQL::Combine::Query::Insert
-                    SQL::Combine::Query::Upsert
-                    SQL::Combine::Query::Update
-                    SQL::Combine::Query::Insert::RawSQL
-                    CodeRef
-                ]),
+    isa      => 'Object | CodeRef',
     required => 1,
 );
 

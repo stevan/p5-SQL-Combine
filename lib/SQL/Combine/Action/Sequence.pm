@@ -11,7 +11,7 @@ has 'inflator' => (
 
 has 'actions' => (
     is       => 'ro',
-    isa      => 'ArrayRef[SQL::Combine::Action] | CodeRef',
+    isa      => 'ArrayRef | CodeRef',
     required => 1,
 );
 

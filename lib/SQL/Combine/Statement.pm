@@ -1,10 +1,27 @@
 package SQL::Combine::Statement;
-use Moose::Role;
+use strict;
+use warnings;
 
-has 'table_name' => ( is => 'ro', isa => 'Str', required => 1 );
-has 'driver'     => ( is => 'ro', isa => 'Str', required => 1 );
+use Carp 'confess';
 
-no Moose::Role; 1;
+sub new {
+    my ($class, %args) = @_;
+
+    ($args{table_name})
+        || confess 'You must supply a `table_name` parameter';
+    ($args{driver})
+        || confess 'You must supply a `driver` parameter';
+
+    bless {
+        driver     => $args{driver},
+        table_name => $args{table_name},
+    } => $class;
+}
+
+sub driver     { $_[0]->{driver}     }
+sub table_name { $_[0]->{table_name} }
+
+1;
 
 __END__
 
