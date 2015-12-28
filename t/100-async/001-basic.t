@@ -80,14 +80,21 @@ my @queries = (
 
 my @futures = map { $_->execute } @queries;
 
+my @answers;
 while ( @futures ) {
     foreach my $i ( 0 .. $#futures ) {
         my $sth = $futures[ $i ]->get( timeout => 0.5 );
         next unless $sth;
         delete $futures[ $i ];
-        warn Dumper $sth->fetchrow_arrayref;
+        push @answers => $sth->fetchrow_arrayref;
     }
 }
+
+is_deeply(
+    \@answers,
+    [[ 0, 1 ], [ 0, 2 ], [ 0, 3 ]],
+    '... got our async stuff back in the order expected'
+);
 
 done_testing;
 
