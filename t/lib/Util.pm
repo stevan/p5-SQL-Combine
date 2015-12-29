@@ -25,15 +25,10 @@ sub setup_mysql_dbh {
     );
 }
 
-sub setup_database {
+sub setup_article_table {
     my ($dbh) = @_;
 
     $dbh->do(q[DROP TABLE IF EXISTS `article`]);
-    $dbh->do(q[DROP TABLE IF EXISTS `person`]);
-    $dbh->do(q[DROP TABLE IF EXISTS `comment`]);
-
-    $dbh->do(q[DROP TABLE IF EXISTS `xref_article_author`]);
-
     $dbh->do(q[
         CREATE TABLE `article` (
             `id`       INT(10)   PRIMARY KEY,
@@ -46,6 +41,16 @@ sub setup_database {
         )
     ]);
 
+    $dbh->do(q[ INSERT INTO `article` (`id`, `title`, `body`, `approver`) VALUES(1, "Title(1)", "Body(1)", 1) ]);
+    $dbh->do(q[ INSERT INTO `article` (`id`, `title`, `body`, `approver`) VALUES(2, "Title(2)", "Body(2)", 1) ]);
+
+    return $dbh;
+}
+
+sub setup_person_table {
+    my ($dbh) = @_;
+
+    $dbh->do(q[DROP TABLE IF EXISTS `person`]);
     $dbh->do(q[
         CREATE TABLE `person` (
             `id`   INT(10)   PRIMARY KEY,
@@ -54,6 +59,16 @@ sub setup_database {
         )
     ]);
 
+    $dbh->do(q[ INSERT INTO `person` (`id`, `name`, `age`) VALUES(1, "Bob", 30) ]);
+    $dbh->do(q[ INSERT INTO `person` (`id`, `name`, `age`) VALUES(2, "Alice", 32) ]);
+
+    return $dbh;
+}
+
+sub setup_comment_table {
+    my ($dbh) = @_;
+
+    $dbh->do(q[DROP TABLE IF EXISTS `comment`]);
     $dbh->do(q[
         CREATE TABLE `comment` (
             `id`      INT(10) PRIMARY KEY,
@@ -63,6 +78,19 @@ sub setup_database {
         )
     ]);
 
+    $dbh->do(q[ INSERT INTO `comment` (`id`, `body`, `author`, `article`) VALUES(1, "Yo!", 1, 1) ]);
+    $dbh->do(q[ INSERT INTO `comment` (`id`, `body`, `author`, `article`) VALUES(2, "Hey!", 2, 1) ]);
+
+    $dbh->do(q[ INSERT INTO `comment` (`id`, `body`, `author`, `article`) VALUES(3, "Yo! (again)", 1, 2) ]);
+    $dbh->do(q[ INSERT INTO `comment` (`id`, `body`, `author`, `article`) VALUES(4, "Hey! (again)", 2, 2) ]);
+
+    return $dbh;
+}
+
+sub setup_xref_article_author_table {
+    my ($dbh) = @_;
+
+    $dbh->do(q[DROP TABLE IF EXISTS `xref_article_author`]);
     $dbh->do(q[
         CREATE TABLE `xref_article_author` (
             `author`  INT(10) NOT NULL,
@@ -70,21 +98,20 @@ sub setup_database {
         )
     ]);
 
-    $dbh->do(q[ INSERT INTO `article` (`id`, `title`, `body`, `approver`) VALUES(1, "Title(1)", "Body(1)", 1) ]);
-    $dbh->do(q[ INSERT INTO `article` (`id`, `title`, `body`, `approver`) VALUES(2, "Title(2)", "Body(2)", 1) ]);
-
-    $dbh->do(q[ INSERT INTO `person` (`id`, `name`, `age`) VALUES(1, "Bob", 30) ]);
-    $dbh->do(q[ INSERT INTO `person` (`id`, `name`, `age`) VALUES(2, "Alice", 32) ]);
-
     $dbh->do(q[ INSERT INTO `xref_article_author` (`author`, `article`) VALUES(1, 1) ]);
     $dbh->do(q[ INSERT INTO `xref_article_author` (`author`, `article`) VALUES(2, 1) ]);
     $dbh->do(q[ INSERT INTO `xref_article_author` (`author`, `article`) VALUES(2, 2) ]);
 
-    $dbh->do(q[ INSERT INTO `comment` (`id`, `body`, `author`, `article`) VALUES(1, "Yo!", 1, 1) ]);
-    $dbh->do(q[ INSERT INTO `comment` (`id`, `body`, `author`, `article`) VALUES(2, "Hey!", 2, 1) ]);
+    return $dbh;
+}
 
-    $dbh->do(q[ INSERT INTO `comment` (`id`, `body`, `author`, `article`) VALUES(3, "Yo! (again)", 1, 2) ]);
-    $dbh->do(q[ INSERT INTO `comment` (`id`, `body`, `author`, `article`) VALUES(4, "Hey! (again)", 2, 2) ]);
+sub setup_database {
+    my ($dbh) = @_;
+
+    setup_article_table( $dbh );
+    setup_person_table( $dbh );
+    setup_comment_table( $dbh );
+    setup_xref_article_author_table( $dbh );
 
     return $dbh;
 }
