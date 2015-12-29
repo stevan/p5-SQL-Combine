@@ -24,10 +24,10 @@ sub new {
     $self->{offset}     = $args{offset};
     $self->{for_update} = $args{for_update};
 
-    if ( exists $args{row_inflator} ) {
-        (ref $args{row_inflator} eq 'CODE')
+    if ( my $row_inflator = $args{row_inflator} ) {
+        (ref $row_inflator eq 'CODE')
             || confess 'The `row_inflator` parameter is required and must be a CODE ref';
-        $self->{row_inflator} = $args{row_inflator};
+        $self->{row_inflator} = $row_inflator;
     }
 
     return $self;

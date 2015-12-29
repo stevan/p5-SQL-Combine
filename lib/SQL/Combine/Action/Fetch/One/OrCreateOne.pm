@@ -1,13 +1,26 @@
 package SQL::Combine::Action::Fetch::One::OrCreateOne;
-use Moose;
+use strict;
+use warnings;
 
-extends 'SQL::Combine::Action::Fetch::One';
+use Carp         'confess';
+use Scalar::Util 'blessed';
 
-has 'or_create' => (
-    is       => 'ro',
-    isa      => 'SQL::Combine::Action::Create::One',
-    required => 1,
-);
+use parent 'SQL::Combine::Action::Fetch::One';
+
+sub new {
+    my ($class, %args) = @_;
+
+    my $self = $class->SUPER::new( %args );
+
+    my $or_create = $args{or_create};
+    (blessed $or_create && $or_create->isa('SQL::Combine::Action::Create::One'))
+        || confess 'The `or_create` parameter is required and must be an instance of `SQL::Combine::Action::Create::One`';
+    $self->{or_create} = $or_create;
+
+    return $self;
+}
+
+sub or_create { $_[0]->{or_create} }
 
 sub is_static {
     my $self = shift;
@@ -30,9 +43,7 @@ sub execute {
     return $self->SUPER::execute( $result );
 }
 
-__PACKAGE__->meta->make_immutable;
-
-no Moose; 1;
+1;
 
 __END__
 

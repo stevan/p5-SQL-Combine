@@ -14,6 +14,8 @@ BEGIN {
     use_ok('SQL::Combine::Schema');
     use_ok('SQL::Combine::Table');
 
+    use_ok('SQL::Combine::Query::Select::RawSQL');
+
     use_ok('SQL::Combine::Action::Sequence');
 
     use_ok('SQL::Combine::Action::Create::One');

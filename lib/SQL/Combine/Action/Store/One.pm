@@ -1,13 +1,30 @@
 package SQL::Combine::Action::Store::One;
-use Moose;
+use strict;
+use warnings;
 
-with 'SQL::Combine::Action::Store';
+use Carp         'confess';
+use Scalar::Util 'blessed';
 
-has 'query' => (
-    is       => 'ro',
-    isa      => 'Object | CodeRef',
-    required => 1,
-);
+use parent 'SQL::Combine::Action::Store';
+
+sub new {
+    my ($class, %args) = @_;
+
+    my $self = $class->SUPER::new( %args );
+
+    if ( my $query = $args{query} ) {
+        ((ref $query eq 'CODE') || (blessed $query && $query->isa('SQL::Combine::Query')))
+            || confess 'The `query` parameter must be an instance of `SQL::Combine::Query` or a CODE ref which returns one';
+        $self->{query} = $query;
+    }
+    else {
+        confess 'The `query` parameter is required';
+    }
+
+    return $self;
+}
+
+sub query { $_[0]->{query} }
 
 sub is_static {
     my $self = shift;
@@ -32,9 +49,7 @@ sub execute {
     return $self->merge_results_and_relations( $hash, $rels );
 }
 
-__PACKAGE__->meta->make_immutable;
-
-no Moose; 1;
+1;
 
 __END__
 

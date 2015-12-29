@@ -1,20 +1,33 @@
 package SQL::Combine::Action::Create::One;
-use Moose;
+use strict;
+use warnings;
 
-use SQL::Combine::Query::Insert;
-use SQL::Combine::Query::Upsert;
+use Carp         'confess';
+use Scalar::Util 'blessed';
 
-use SQL::Combine::Query::Insert::RawSQL;
+use parent 'SQL::Combine::Action::Create';
 
-with 'SQL::Combine::Action::Create';
+sub new {
+    my ($class, %args) = @_;
 
-has 'id_key' => ( is => 'ro', isa => 'Str', default => 'id' );
+    my $self = $class->SUPER::new( %args );
 
-has 'query' => (
-    is       => 'ro',
-    isa      => 'Object | CodeRef',
-    required => 1,
-);
+    $self->{id_key} = $args{id_key} // 'id';
+
+    if ( my $query = $args{query} ) {
+        ((ref $query eq 'CODE') || (blessed $query && $query->isa('SQL::Combine::Query')))
+            || confess 'The `query` parameter must be an instance of `SQL::Combine::Query` or a CODE ref which returns one';
+        $self->{query} = $query;
+    }
+    else {
+        confess 'The `query` parameter is required';
+    }
+
+    return $self;
+}
+
+sub query  { $_[0]->{query}  }
+sub id_key { $_[0]->{id_key} }
 
 sub is_static {
     my $self = shift;
@@ -46,9 +59,7 @@ sub execute {
     return $self->merge_results_and_relations( $hash, $rels );
 }
 
-__PACKAGE__->meta->make_immutable;
-
-no Moose; 1;
+1;
 
 __END__
 

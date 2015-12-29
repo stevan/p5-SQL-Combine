@@ -1,9 +1,10 @@
 package SQL::Combine::Action::Create;
-use Moose::Role;
+use strict;
+use warnings;
 
-with 'SQL::Combine::Action';
+use parent 'SQL::Combine::Action';
 
-no Moose::Role; 1;
+1;
 
 __END__
 

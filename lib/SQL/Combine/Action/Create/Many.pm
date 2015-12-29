@@ -1,21 +1,42 @@
 package SQL::Combine::Action::Create::Many;
-use Moose;
+use strict;
+use warnings;
 
-use SQL::Combine::Query::Insert;
-use SQL::Combine::Query::Upsert;
-use SQL::Combine::Query::Update;
+use Carp         'confess';
+use Scalar::Util 'blessed';
 
-use SQL::Combine::Query::Insert::RawSQL;
+use parent 'SQL::Combine::Action::Create';
 
-with 'SQL::Combine::Action::Create';
+sub new {
+    my ($class, %args) = @_;
 
-has 'id_key' => ( is => 'ro', isa => 'Str', default => 'id' );
+    my $self = $class->SUPER::new( %args );
 
-has 'queries' => (
-    is       => 'ro',
-    isa      => 'ArrayRef | CodeRef',
-    required => 1,
-);
+    $self->{id_key} = $args{id_key} // 'id';
+
+    if ( my $queries = $args{queries} ) {
+        if ( ref $queries eq 'ARRAY' ) {
+            (blessed $_ && $_->isa('SQL::Combine::Query'))
+                || confess 'If the `queries` parameter is an ARRAY ref, it must containt instances of `SQL::Combine::Query` only'
+                    foreach @$queries;
+        }
+        elsif ( ref $queries eq 'CODE' ) {
+            # just checking
+        }
+        else {
+            confess 'The `queries` parameter must be an ARRAY ref of instance of `SQL::Combine::Query` or a CODE ref which returns one';
+        }
+        $self->{queries} = $queries;
+    }
+    else {
+        confess 'The `queries` parameter is required';
+    }
+
+    return $self;
+}
+
+sub queries { $_[0]->{queries} }
+sub id_key  { $_[0]->{id_key}  }
 
 sub is_static {
     my $self = shift;
@@ -53,9 +74,7 @@ sub execute {
     return $hash;
 }
 
-__PACKAGE__->meta->make_immutable;
-
-no Moose; 1;
+1;
 
 __END__
 

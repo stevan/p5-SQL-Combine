@@ -1,7 +1,8 @@
 package SQL::Combine::Action::Fetch::One;
-use Moose;
+use strict;
+use warnings;
 
-with 'SQL::Combine::Action::Fetch';
+use parent 'SQL::Combine::Action::Fetch';
 
 sub execute {
     my $self   = shift;
@@ -24,9 +25,7 @@ sub execute {
     return $obj;
 }
 
-__PACKAGE__->meta->make_immutable;
-
-no Moose; 1;
+1;
 
 __END__
 

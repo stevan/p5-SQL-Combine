@@ -1,15 +1,29 @@
 package SQL::Combine::Action::Fetch::Many::XRef;
-use Moose;
+use strict;
+use warnings;
 
-extends 'SQL::Combine::Action::Fetch::Many';
+use Carp         'confess';
+use Scalar::Util 'blessed';
 
-has 'xref' => (
-    is       => 'ro',
-    does     => 'SQL::Combine::Action::Fetch',
-    required => 1,
-);
+use parent 'SQL::Combine::Action::Fetch::Many';
 
-has '+query' => ( isa => 'CodeRef' );
+sub new {
+    my ($class, %args) = @_;
+
+    (ref $args{query} eq 'CODE')
+        || confess 'The `query` parameter must be a CODE ref';
+
+    my $self = $class->SUPER::new( %args );
+
+    my $xref = $args{xref};
+    (blessed $xref && $xref->isa('SQL::Combine::Action::Fetch'))
+        || confess 'The `xref` parameter is required and must be an instance of `SQL::Combine::Action::Fetch`';
+    $self->{xref} = $xref;
+
+    return $self;
+}
+
+sub xref { $_[0]->{xref} }
 
 sub is_static { return 0 }
 
@@ -18,9 +32,7 @@ sub prepare_query {
     return $self->query->( $self->xref->execute( $results ) );
 }
 
-__PACKAGE__->meta->make_immutable;
-
-no Moose; 1;
+1;
 
 __END__
 

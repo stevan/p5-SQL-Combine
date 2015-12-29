@@ -19,32 +19,50 @@ BEGIN {
 }
 
 package Person {
-    use Moose;
+    use strict;
+    use warnings;
 
-    has 'id'     => ( is => 'ro', isa => 'Int' );
-    has 'name'   => ( is => 'ro', isa => 'Str' );
-    has 'age'    => ( is => 'ro', isa => 'Int' );
+    sub new {
+        my $class = shift;
+        bless { @_ } => $class;
+    }
 
-    has 'comments'  => ( is => 'ro', isa => 'ArrayRef[Comment]' );
-    has 'approvals' => ( is => 'ro', isa => 'ArrayRef[Article]' );
+    sub id   { $_[0]->{id}   }
+    sub name { $_[0]->{name} }
+    sub age  { $_[0]->{age}  }
+
+    sub comments  { $_[0]->{comments}  }
+    sub approvals { $_[0]->{approvals} }
 }
 
 package Comment {
-    use Moose;
+    use strict;
+    use warnings;
 
-    has 'id'   => ( is => 'ro', isa => 'Int' );
-    has 'body' => ( is => 'ro', isa => 'Str' );
+    sub new {
+        my $class = shift;
+        bless { @_ } => $class;
+    }
+
+    sub id   { $_[0]->{id}   }
+    sub body { $_[0]->{body} }
 }
 
 package Article {
-    use Moose;
+    use strict;
+    use warnings;
 
-    has 'id'      => (is => 'ro', isa => 'Int' );
-    has 'title'   => (is => 'ro', isa => 'Str' );
-    has 'body'    => (is => 'ro', isa => 'Str' );
-    has 'created' => (is => 'ro', isa => 'Str' );
-    has 'updated' => (is => 'ro', isa => 'Str' );
-    has 'status'  => (is => 'ro', isa => 'Str' );
+    sub new {
+        my $class = shift;
+        bless { @_ } => $class;
+    }
+
+    sub id      { $_[0]->{id}      }
+    sub title   { $_[0]->{title}   }
+    sub body    { $_[0]->{body}    }
+    sub created { $_[0]->{created} }
+    sub updated { $_[0]->{updated} }
+    sub status  { $_[0]->{status}  }
 }
 
 

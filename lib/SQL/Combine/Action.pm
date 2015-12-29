@@ -1,32 +1,37 @@
 package SQL::Combine::Action;
-use Moose::Role;
+use strict;
+use warnings;
 
-use SQL::Combine::Schema;
+use Carp         'confess';
+use Scalar::Util 'blessed';
 
-requires 'execute';
-requires 'is_static';
+sub new {
+    my ($class, %args) = @_;
 
-has 'schema' => (
-    is       => 'ro',
-    isa      => 'SQL::Combine::Schema',
-    required => 1
-);
+    my $schema = $args{schema};
 
-has 'relations' => (
-    traits   => [ 'Hash' ],
-    is       => 'ro',
-    isa      => 'HashRef',
-    lazy     => 1,
-    default  => sub { +{} },
-    handles  => {
-        _add_relation => 'set',
-        all_relations => 'elements'
-    }
-);
+    (blessed $schema && $schema->isa('SQL::Combine::Schema'))
+        || confess 'The `schema` parameter is required and must be an instance of `SQL::Combine::Schema`';
+
+    bless {
+        schema    => $schema,
+        relations => +{},
+    } => $class;
+}
+
+sub execute;
+sub is_static;
+
+sub schema { $_[0]->{schema} }
+
+sub relations     {    $_[0]->{relations}   }
+sub all_relations { %{ $_[0]->{relations} } }
 
 sub relates_to {
     my ($self, $name, $action) = @_;
-    $self->_add_relation( $name, $action );
+    (blessed $action && $action->isa('SQL::Combine::Action'))
+        || confess 'The `action` being related must be an instance of `SQL::Combine::Action`';
+    $self->{relations}->{ $name } = $action;
     $self;
 }
 
@@ -57,7 +62,7 @@ sub execute_query {
     my ($self, $query) = @_;
 
     (blessed $query && $query->isa('SQL::Combine::Query'))
-        || confess 'The `query` object must implement the SQL::Combine::Query role';
+        || confess 'The `query` object must be an instance of `SQL::Combine::Query`';
 
     my $sql  = $query->to_sql;
     my @bind = $query->to_bind;
@@ -72,7 +77,7 @@ sub execute_query {
     return $sth;
 }
 
-no Moose::Role; 1;
+1;
 
 __END__
 

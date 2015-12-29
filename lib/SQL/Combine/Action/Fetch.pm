@@ -1,22 +1,39 @@
 package SQL::Combine::Action::Fetch;
-use Moose::Role;
+use strict;
+use warnings;
 
-use SQL::Combine::Query::Select;
-use SQL::Combine::Query::Select::RawSQL;
+use Carp         'confess';
+use Scalar::Util 'blessed';
 
-with 'SQL::Combine::Action';
+use parent 'SQL::Combine::Action';
 
-has 'query' => (
-    is       => 'ro',
-    isa      => 'Object | CodeRef',
-    required => 1,
-);
+sub new {
+    my ($class, %args) = @_;
 
-has 'inflator' => (
-    is        => 'ro',
-    isa       => 'CodeRef',
-    predicate => 'has_inflator'
-);
+    my $self = $class->SUPER::new( %args );
+
+    if ( my $query = $args{query} ) {
+        ((ref $query eq 'CODE') || (blessed $query && $query->isa('SQL::Combine::Query')))
+            || confess 'The `query` parameter must be an instance of `SQL::Combine::Query` or a CODE ref which returns one';
+        $self->{query} = $query;
+    }
+    else {
+        confess 'The `query` parameter is required';
+    }
+
+    if ( my $inflator = $args{inflator} ) {
+        (ref $inflator eq 'CODE')
+            || confess 'The `inflator` parameter must be a CODE ref';
+        $self->{inflator} = $inflator;
+    }
+
+    return $self;
+}
+
+sub inflator     {    $_[0]->{inflator} }
+sub has_inflator { !! $_[0]->{inflator} }
+
+sub query { $_[0]->{query} }
 
 sub is_static {
     my $self = shift;
@@ -30,7 +47,7 @@ sub prepare_query {
     return $query;
 }
 
-no Moose::Role; 1;
+1;
 
 __END__
 

@@ -5,8 +5,6 @@ use warnings;
 use Carp         'confess';
 use Scalar::Util 'blessed';
 
-use SQL::Combine::Table;
-
 sub new {
     my ($class, %args) = @_;
 
@@ -16,8 +14,10 @@ sub new {
     ($args{tables} && ref $args{tables} eq 'ARRAY')
         || confess 'The `tables` parameter is required and must be an ARRAY ref';
 
+    my @tables = @{ $args{tables} };
+
     my %_table_map;
-    foreach my $table ( @{ $args{tables} } ) {
+    foreach my $table ( @tables ) {
         (blessed $table && $table->isa('SQL::Combine::Table'))
             || confess 'The `tables` parameter must contain only intances of `SQL::Combine::Table`';
         $_table_map{ $table->name } = $table;
@@ -26,12 +26,12 @@ sub new {
     my $self = bless {
         name       => $args{name},
         dbh        => $args{dbh},
-        tables     => $args{tables},
+        tables     => \@tables,
         # private ...
         _table_map => \%_table_map,
     } => $class;
 
-    foreach my $table ( @{ $self->{tables} } ) {
+    foreach my $table ( @tables ) {
         $table->_associate_with_schema( $self );
     }
 

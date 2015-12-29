@@ -1,15 +1,39 @@
 package SQL::Combine::Action::Store::Many;
-use Moose;
+use strict;
+use warnings;
 
-use SQL::Combine::Query::Update;
+use Carp         'confess';
+use Scalar::Util 'blessed';
 
-with 'SQL::Combine::Action::Store';
+use parent 'SQL::Combine::Action::Store';
 
-has 'queries' => (
-    is       => 'ro',
-    isa      => 'ArrayRef | CodeRef',
-    required => 1,
-);
+sub new {
+    my ($class, %args) = @_;
+
+    my $self = $class->SUPER::new( %args );
+
+    if ( my $queries = $args{queries} ) {
+        if ( ref $queries eq 'ARRAY' ) {
+            (blessed $_ && $_->isa('SQL::Combine::Query'))
+                || confess 'If the `queries` parameter is an ARRAY ref, it must containt instances of `SQL::Combine::Query` only'
+                    foreach @$queries;
+        }
+        elsif ( ref $queries eq 'CODE' ) {
+            # just checking
+        }
+        else {
+            confess 'The `queries` parameter must be an ARRAY ref of instance of `SQL::Combine::Query` or a CODE ref which returns one';
+        }
+        $self->{queries} = $queries;
+    }
+    else {
+        confess 'The `queries` parameter is required';
+    }
+
+    return $self;
+}
+
+sub queries { $_[0]->{queries} }
 
 sub is_static {
     my $self = shift;
@@ -41,9 +65,7 @@ sub execute {
     return $hash;
 }
 
-__PACKAGE__->meta->make_immutable;
-
-no Moose; 1;
+1;
 
 __END__
 

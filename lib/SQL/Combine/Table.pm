@@ -19,13 +19,13 @@ sub new {
     ($args{driver})
         || confess 'You must supply a `driver` parameter';
 
-    if ( exists $args{columns} ) {
-        (ref $args{columns} eq 'ARRAY')
+    if ( my $columns = $args{columns} ) {
+        (ref $columns eq 'ARRAY')
             || confess 'The `columns` parameter must be an ARRAY ref';
     }
 
-    if ( exists $args{schema} ) {
-        (blessed $args{schema} && $args{schema}->isa('SQL::Combine::Schema'))
+    if ( my $schema = $args{schema} ) {
+        (blessed $schema && $schema->isa('SQL::Combine::Schema'))
             || confess 'The `schema` parameter must be an instance of `SQL::Combine::Schema`';
     }
 

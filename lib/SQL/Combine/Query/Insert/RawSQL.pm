@@ -14,15 +14,15 @@ sub new {
     $self->{id}  = $args{id};
     $self->{sql} = $args{sql} || confess 'You must supply a `sql` parameter';
 
-    ($args{bind} && ref $args{bind} eq 'ARRAY')
+    my $bind = $args{bind};
+    ($bind && ref $bind eq 'ARRAY')
         || confess 'The `bind` parameter is required and must be an ARRAY ref';
+    $self->{bind} = $bind;
 
-    $self->{bind} = $args{bind};
-
-    if ( exists $args{row_inflator} ) {
-        (ref $args{row_inflator} eq 'CODE')
+    if ( my $row_inflator = $args{row_inflator} ) {
+        (ref $row_inflator eq 'CODE')
             || confess 'The `row_inflator` parameter is required and must be a CODE ref';
-        $self->{row_inflator} = $args{row_inflator};
+        $self->{row_inflator} = $row_inflator;
     }
 
     return $self;

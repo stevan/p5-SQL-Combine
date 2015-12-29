@@ -1,19 +1,48 @@
 package SQL::Combine::Action::Sequence;
-use Moose;
+use strict;
+use warnings;
 
-with 'SQL::Combine::Action';
+use Carp         'confess';
+use Scalar::Util 'blessed';
 
-has 'inflator' => (
-    is        => 'ro',
-    isa       => 'CodeRef',
-    predicate => 'has_inflator'
-);
+use parent 'SQL::Combine::Action';
 
-has 'actions' => (
-    is       => 'ro',
-    isa      => 'ArrayRef | CodeRef',
-    required => 1,
-);
+sub new {
+    my ($class, %args) = @_;
+
+    my $self = $class->SUPER::new( %args );
+
+    if ( my $inflator = $args{inflator} ) {
+        (ref $inflator eq 'CODE')
+            || confess 'The `inflator` parameter must be a CODE ref';
+        $self->{inflator} = $inflator;
+    }
+
+    if ( my $actions = $args{actions} ) {
+        if ( ref $actions eq 'ARRAY' ) {
+            (blessed $_ && $_->isa('SQL::Combine::Action'))
+                || confess 'If the `actions` parameter is an ARRAY ref, it must containt instances of `SQL::Combine::Action` only'
+                    foreach @$actions;
+        }
+        elsif ( ref $actions eq 'CODE' ) {
+            # nothing ... just checking
+        }
+        else {
+            confess 'The `actions` parameter must be either an ARRAY ref of `SQL::Combine::Action` instance, or a CODE ref which returns that';
+        }
+        $self->{actions} = $actions;
+    }
+    else {
+        confess 'The `actions` parameter is required';
+    }
+
+    return $self;
+}
+
+sub inflator     {    $_[0]->{inflator} }
+sub has_inflator { !! $_[0]->{inflator} }
+
+sub actions { $_[0]->{actions} }
 
 sub is_static {
     my $self = shift;
@@ -54,9 +83,7 @@ sub execute {
     return $obj;
 }
 
-__PACKAGE__->meta->make_immutable;
-
-no Moose; 1;
+1;
 
 __END__
 
