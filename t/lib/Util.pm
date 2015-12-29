@@ -6,7 +6,7 @@ use warnings;
 use DBI;
 
 sub setup_sqlite_dbh {
-    my $DBH = DBI->connect(
+    return DBI->connect(
         ('dbi:SQLite:dbname=:memory:', '', ''),
         {
             PrintError => 0,
@@ -16,8 +16,9 @@ sub setup_sqlite_dbh {
 }
 
 sub setup_mysql_dbh {
-    my $DBH = DBI->connect(
-        ('dbi:mysql:database=test;host=localhost', '', ''),
+    my $db = shift // 'test';
+    return DBI->connect(
+        ('dbi:mysql:database=' . $db . ';host=localhost', '', ''),
         {
             PrintError => 0,
             RaiseError => 1,
