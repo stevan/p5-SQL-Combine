@@ -43,6 +43,7 @@ sub is_static {
 sub execute {
     my $self   = shift;
     my $result = shift // {};
+    my $attrs  = shift // {};
 
     my $queries = $self->queries;
     $queries = $queries->( $result )
@@ -50,7 +51,7 @@ sub execute {
 
     my @rows;
     foreach my $query ( @$queries ) {
-        my $sth = $self->execute_query( $query );
+        my $sth = $self->execute_query( $query, $attrs );
         push @rows => $sth->rows;
     }
 

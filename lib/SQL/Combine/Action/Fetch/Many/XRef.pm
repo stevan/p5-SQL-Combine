@@ -20,16 +20,26 @@ sub new {
         || confess 'The `xref` parameter is required and must be an instance of `SQL::Combine::Action::Fetch`';
     $self->{xref} = $xref;
 
+    if ( my $xref_attrs = $args{xref_attrs} ) {
+        (ref $xref_attrs eq 'HASH')
+            || confess 'The `xref_attrs` parameter must be a HASH ref';
+        $self->{xref_attrs} = $xref_attrs;
+    }
+    else {
+        $self->{xref_attrs} = +{};
+    }
+
     return $self;
 }
 
-sub xref { $_[0]->{xref} }
+sub xref       { $_[0]->{xref}       }
+sub xref_attrs { $_[0]->{xref_attrs} }
 
 sub is_static { return 0 }
 
 sub prepare_query {
     my ($self, $results) = @_;
-    return $self->query->( $self->xref->execute( $results ) );
+    return $self->query->( $self->xref->execute( $results, $self->xref_attrs ) );
 }
 
 1;

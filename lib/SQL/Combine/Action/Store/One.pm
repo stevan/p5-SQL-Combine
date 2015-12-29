@@ -41,10 +41,11 @@ sub prepare_query {
 sub execute {
     my $self   = shift;
     my $result = shift // {};
+    my $attrs  = shift // {};
 
-    my $sth  = $self->execute_query( $self->prepare_query( $result ) );
+    my $sth  = $self->execute_query( $self->prepare_query( $result ), $attrs );
     my $hash = { rows => $sth->rows };
-    my $rels = $self->execute_relations( $hash );
+    my $rels = $self->execute_relations( $hash, $attrs );
 
     return $self->merge_results_and_relations( $hash, $rels );
 }

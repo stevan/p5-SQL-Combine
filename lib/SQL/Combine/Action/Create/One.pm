@@ -44,9 +44,10 @@ sub prepare_query {
 sub execute {
     my $self   = shift;
     my $result = shift // {};
+    my $attrs  = shift // {};
 
     my $query = $self->prepare_query( $result );
-    my $sth   = $self->execute_query( $query );
+    my $sth   = $self->execute_query( $query, $attrs );
 
     my $last_insert_id = $query->locate_id( $self->id_key )
         // $self->schema
@@ -54,7 +55,7 @@ sub execute {
                 ->last_insert_id( undef, undef, undef, undef, {} );
 
     my $hash = { id => $last_insert_id };
-    my $rels = $self->execute_relations( $hash );
+    my $rels = $self->execute_relations( $hash, $attrs );
 
     return $self->merge_results_and_relations( $hash, $rels );
 }

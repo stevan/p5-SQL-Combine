@@ -30,8 +30,9 @@ sub is_static {
 sub execute {
     my $self   = shift;
     my $result = shift // {};
+    my $attrs  = shift // {};
 
-    my $obj = $self->SUPER::execute( $result );
+    my $obj = $self->SUPER::execute( $result, $attrs );
     return $obj if $obj;
 
     # NOTE:
@@ -39,8 +40,8 @@ sub execute {
     # value of create here since it is
     # just the IDs
     # - SL
-    $self->or_create->execute( $result );
-    return $self->SUPER::execute( $result );
+    $self->or_create->execute( $result, $attrs );
+    return $self->SUPER::execute( $result, $attrs );
 }
 
 1;

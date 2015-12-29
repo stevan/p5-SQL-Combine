@@ -36,11 +36,11 @@ sub relates_to {
 }
 
 sub execute_relations {
-    my ($self, $hash) = @_;
+    my ($self, $hash, $attrs) = @_;
     my %results;
     my %relations = $self->all_relations;
     foreach my $rel ( keys %relations ) {
-        $results{ $rel } = $relations{ $rel }->execute( $hash );
+        $results{ $rel } = $relations{ $rel }->execute( $hash, $attrs );
     }
     return \%results;
 }
@@ -59,10 +59,12 @@ sub merge_results_and_relations {
 }
 
 sub execute_query {
-    my ($self, $query) = @_;
+    my ($self, $query, $attrs) = @_;
 
     (blessed $query && $query->isa('SQL::Combine::Query'))
         || confess 'The `query` object must be an instance of `SQL::Combine::Query`';
+
+    $attrs //= +{};
 
     my $sql  = $query->to_sql;
     my @bind = $query->to_bind;
@@ -71,7 +73,7 @@ sub execute_query {
         && print STDERR '[',__PACKAGE__,'] SQL: "',$sql,'" BIND: (',(join ', ' => @bind),")\n";
 
     my $dbh = $self->schema->get_dbh_for_query( $query );
-    my $sth = $dbh->prepare( $sql );
+    my $sth = $dbh->prepare( $sql, $attrs );
     $sth->execute( @bind );
 
     return $sth;

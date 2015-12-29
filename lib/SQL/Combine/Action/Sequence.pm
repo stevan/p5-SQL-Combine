@@ -63,6 +63,7 @@ sub is_static {
 sub execute {
     my $self   = shift;
     my $result = shift // {};
+    my $attrs  = shift // {};
 
     my $actions = $self->actions;
     $actions = $actions->( $result )
@@ -70,11 +71,11 @@ sub execute {
 
     my @results;
     foreach my $action ( @$actions ) {
-        my $x = $action->execute( $result );
+        my $x = $action->execute( $result, $attrs );
         push @results => $x; # otherwise it doesn't push an undef on here
     }
 
-    my $rels = $self->execute_relations( \@results );
+    my $rels = $self->execute_relations( \@results, $attrs );
 
     my $obj = $self->has_inflator
         ? $self->inflator->( $self->merge_results_and_relations( \@results, $rels ) )
