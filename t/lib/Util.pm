@@ -15,10 +15,10 @@ sub setup_sqlite_dbh {
     );
 }
 
+my $_mysql_db_name_counter = 0;
 sub setup_mysql_dbh {
-    my $db = shift // 'test';
     return DBI->connect(
-        ('dbi:mysql:database=' . $db . ';host=localhost', '', ''),
+        ('dbi:mysql:database=sql_combine_test_' . sprintf('%0.5f' => $_mysql_db_name_counter++) . ';host=localhost', '', ''),
         {
             PrintError => 0,
             RaiseError => 1,
