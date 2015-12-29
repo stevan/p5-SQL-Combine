@@ -2,7 +2,8 @@ package SQL::Combine::Action::Fetch::One;
 use strict;
 use warnings;
 
-use parent 'SQL::Combine::Action::Fetch';
+use parent 'SQL::Combine::Action::Fetch',
+           'SQL::Combine::Action::Role::WithRelations';;
 
 sub execute {
     my $self   = shift;

@@ -5,7 +5,8 @@ use warnings;
 use Carp         'confess';
 use Scalar::Util 'blessed';
 
-use parent 'SQL::Combine::Action';
+use parent 'SQL::Combine::Action',
+           'SQL::Combine::Action::Role::WithRelations';
 
 sub new {
     my ($class, %args) = @_;
