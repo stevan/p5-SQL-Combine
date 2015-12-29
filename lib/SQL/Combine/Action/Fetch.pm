@@ -12,6 +12,11 @@ sub new {
 
     my $self = $class->SUPER::new( %args );
 
+    my $schema = $args{schema};
+    (blessed $schema && $schema->isa('SQL::Combine::Schema'))
+        || confess 'The `schema` parameter is required and must be an instance of `SQL::Combine::Schema`';
+    $self->{schema} = $schema;
+
     if ( my $query = $args{query} ) {
         ((ref $query eq 'CODE') || (blessed $query && $query->isa('SQL::Combine::Query')))
             || confess 'The `query` parameter must be an instance of `SQL::Combine::Query` or a CODE ref which returns one';
@@ -30,10 +35,11 @@ sub new {
     return $self;
 }
 
+sub schema { $_[0]->{schema} }
+sub query  { $_[0]->{query}  }
+
 sub inflator     {    $_[0]->{inflator} }
 sub has_inflator { !! $_[0]->{inflator} }
-
-sub query { $_[0]->{query} }
 
 sub is_static {
     my $self = shift;

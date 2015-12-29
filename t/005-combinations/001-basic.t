@@ -92,7 +92,6 @@ foreach my $i ( 0, 1 ) {
         ok($max_comment_id_query->is_static, '... the query is static');
 
         my $combined = SQL::Combine::Action::Sequence->new(
-            schema  => $User, # TODO - get rid of this
             actions => [ $find_article_query, $find_jim_query, $max_comment_id_query ],
         );
         isa_ok($combined, 'SQL::Combine::Action::Sequence');

@@ -10,7 +10,8 @@ sub execute {
     my $result = shift // {};
 
     my $query = $self->prepare_query( $result );
-    my $sth   = $self->execute_query( $query  );
+    my $dbh   = $self->schema->get_dbh_for_query( $query );
+    my $sth   = $self->execute_query( $dbh, $query );
     my ($row) = $sth->fetchall_arrayref;
 
     # we return a scalar, always

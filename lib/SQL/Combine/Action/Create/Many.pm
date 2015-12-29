@@ -14,6 +14,11 @@ sub new {
 
     $self->{id_key} = $args{id_key} // 'id';
 
+    my $schema = $args{schema};
+    (blessed $schema && $schema->isa('SQL::Combine::Schema'))
+        || confess 'The `schema` parameter is required and must be an instance of `SQL::Combine::Schema`';
+    $self->{schema} = $schema;
+
     if ( my $queries = $args{queries} ) {
         if ( ref $queries eq 'ARRAY' ) {
             (blessed $_ && $_->isa('SQL::Combine::Query'))
@@ -35,6 +40,7 @@ sub new {
     return $self;
 }
 
+sub schema  { $_[0]->{schema}  }
 sub queries { $_[0]->{queries} }
 sub id_key  { $_[0]->{id_key}  }
 
@@ -47,18 +53,18 @@ sub execute {
     my $self   = shift;
     my $result = shift // {};
 
+    my $schema  = $self->schema;
     my $queries = $self->queries;
     $queries = $queries->( $result )
         if ref $queries eq 'CODE';
 
     my @ids;
     foreach my $query ( @$queries ) {
-        $self->execute_query( $query );
+        my $dbh = $schema->get_dbh_for_query( $query );
+        $self->execute_query( $dbh, $query );
 
         my $last_insert_id = $query->locate_id( $self->id_key )
-            // $self->schema
-                    ->get_rw_dbh
-                    ->last_insert_id( undef, undef, undef, undef, {} );
+            // $dbh->last_insert_id( undef, undef, undef, undef, {} );
 
         push @ids => $last_insert_id;
     }

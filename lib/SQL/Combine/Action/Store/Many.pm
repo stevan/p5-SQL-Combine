@@ -12,6 +12,11 @@ sub new {
 
     my $self = $class->SUPER::new( %args );
 
+    my $schema = $args{schema};
+    (blessed $schema && $schema->isa('SQL::Combine::Schema'))
+        || confess 'The `schema` parameter is required and must be an instance of `SQL::Combine::Schema`';
+    $self->{schema} = $schema;
+
     if ( my $queries = $args{queries} ) {
         if ( ref $queries eq 'ARRAY' ) {
             (blessed $_ && $_->isa('SQL::Combine::Query'))
@@ -33,6 +38,7 @@ sub new {
     return $self;
 }
 
+sub schema  { $_[0]->{schema}  }
 sub queries { $_[0]->{queries} }
 
 sub is_static {
@@ -50,7 +56,8 @@ sub execute {
 
     my @rows;
     foreach my $query ( @$queries ) {
-        my $sth = $self->execute_query( $query );
+        my $dbh = $self->schema->get_dbh_for_query( $query );
+        my $sth = $self->execute_query( $dbh, $query );
         push @rows => $sth->rows;
     }
 
