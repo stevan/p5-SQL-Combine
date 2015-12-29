@@ -15,15 +15,28 @@ sub setup_sqlite_dbh {
     );
 }
 
-my $_mysql_db_name_counter = 0;
-sub setup_mysql_dbh {
-    return DBI->connect(
-        ('dbi:mysql:database=sql_combine_test_' . sprintf('%0.5f' => $_mysql_db_name_counter++) . ';host=localhost', '', ''),
-        {
-            PrintError => 0,
-            RaiseError => 1,
-        }
-    );
+{
+    my @_mysql_db_to_clean_up;
+    my $_mysql_db_name_counter = 0;
+
+    sub setup_mysql_dbh {
+        my $db_name = sprintf('sql_combine_test_%0.5d' => $_mysql_db_name_counter++);
+        system('mysql', '-e', "DROP DATABASE IF EXISTS $db_name");
+        system('mysql', '-e', "CREATE DATABASE $db_name");
+        my $dbh = DBI->connect(
+            ('dbi:mysql:database=' . $db_name . ';host=localhost', '', ''),
+            {
+                PrintError => 0,
+                RaiseError => 1,
+            }
+        );
+        push @_mysql_db_to_clean_up => $db_name;
+        return $dbh;
+    }
+
+    END {
+        map system('mysql', '-e', "DROP DATABASE IF EXISTS $_"), @_mysql_db_to_clean_up;
+    }
 }
 
 sub setup_article_table {

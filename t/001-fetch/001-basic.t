@@ -65,21 +65,27 @@ package Article {
     sub status  { $_[0]->{status}  }
 }
 
-
-my @DRIVERS = ('sqlite', 'mysql');
-my @DBHS    = (
-    Util::setup_database( Util::setup_sqlite_dbh ),
-    Util::setup_database( Util::setup_mysql_dbh )
+my %DBHS = (
+    sqlite => [ Util::setup_sqlite_dbh, Util::setup_sqlite_dbh ],
+    mysql  => [ Util::setup_mysql_dbh,  Util::setup_mysql_dbh  ],
 );
 
-foreach my $i ( 0, 1 ) {
+# split the database ...
+foreach my $dbhs ( values %DBHS ) {
+    Util::setup_person_table( $dbhs->[0] );
 
-    my $DRIVER = $DRIVERS[ $i ];
-    my $DBH    = $DBHS[ $i ];
+    Util::setup_article_table( $dbhs->[1] );
+    Util::setup_comment_table( $dbhs->[1] );
+    Util::setup_xref_article_author_table( $dbhs->[1] );
+}
+
+foreach my $DRIVER ( keys %DBHS ) {
+
+    my ($user_dbh, $other_dbh) = @{ $DBHS{ $DRIVER } };
 
     my $User = SQL::Combine::Schema->new(
         name   => 'user',
-        dbh    => { rw => $DBH },
+        dbh    => { rw => $user_dbh },
         tables => [
             SQL::Combine::Table->new(
                 name       => 'Person',
@@ -90,7 +96,7 @@ foreach my $i ( 0, 1 ) {
     );
     my $Other = SQL::Combine::Schema->new(
         name   => 'other',
-        dbh    => { rw => $DBH },
+        dbh    => { rw => $other_dbh },
         tables => [
             SQL::Combine::Table->new(
                 name       => 'Comment',
@@ -143,7 +149,7 @@ foreach my $i ( 0, 1 ) {
 
         $person_query->relates_to(
             approvals => SQL::Combine::Action::Fetch::Many->new(
-                schema => $User,
+                schema => $Other,
                 query  => $Article->select(
                     columns => [qw[ id title body created updated status ]],
                     where   => [ approver => $PERSON_ID ],
@@ -217,7 +223,7 @@ foreach my $i ( 0, 1 ) {
 
         $person_query->relates_to(
             approvals => SQL::Combine::Action::Fetch::Many->new(
-                schema => $User,
+                schema => $Other,
                 query  => $Article->select(
                     columns => [qw[ id title body created updated status ]],
                     where   => [ approver => $PERSON_ID ],
