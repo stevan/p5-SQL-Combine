@@ -46,7 +46,6 @@ sub is_static {
 sub execute {
     my $self   = shift;
     my $result = shift // {};
-    my $attrs  = shift // {};
 
     my $queries = $self->queries;
     $queries = $queries->( $result )
@@ -54,7 +53,7 @@ sub execute {
 
     my @ids;
     foreach my $query ( @$queries ) {
-        $self->execute_query( $query, $attrs );
+        $self->execute_query( $query );
 
         my $last_insert_id = $query->locate_id( $self->id_key )
             // $self->schema

@@ -7,10 +7,9 @@ use parent 'SQL::Combine::Action::Fetch';
 sub execute {
     my $self   = shift;
     my $result = shift // {};
-    my $attrs  = shift // {};
 
     my $query = $self->prepare_query( $result );
-    my $sth   = $self->execute_query( $query, $attrs );
+    my $sth   = $self->execute_query( $query  );
     my @rows  = $sth->fetchall_arrayref;
 
     return unless @rows;
@@ -19,7 +18,7 @@ sub execute {
 
     my @merged;
     foreach my $hash ( @$hashes ) {
-        my $rels = $self->execute_relations( $hash, $attrs );
+        my $rels = $self->execute_relations( $hash );
         push @merged => $self->merge_results_and_relations( $hash, $rels );
     }
 
