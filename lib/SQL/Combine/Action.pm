@@ -33,6 +33,8 @@ sub execute_query {
     return $sth;
 }
 
+our $IS_ABSTRACT; BEGIN { $IS_ABSTRACT = 1 }
+
 1;
 
 __END__

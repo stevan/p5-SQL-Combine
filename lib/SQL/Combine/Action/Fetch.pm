@@ -58,6 +58,8 @@ sub prepare_query {
     return $query;
 }
 
+our $IS_ABSTRACT; BEGIN { $IS_ABSTRACT = 1 }
+
 1;
 
 __END__

@@ -13,6 +13,8 @@ sub is_idempotent;
 sub to_sql;
 sub to_bind;
 
+our $IS_ABSTRACT; BEGIN { $IS_ABSTRACT = 1 }
+
 1;
 
 __END__

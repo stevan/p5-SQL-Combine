@@ -17,6 +17,8 @@ our %HAS; BEGIN {
 sub driver     { $_[0]->{driver}     }
 sub table_name { $_[0]->{table_name} }
 
+our $IS_ABSTRACT; BEGIN { $IS_ABSTRACT = 1 }
+
 1;
 
 __END__
