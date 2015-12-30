@@ -5,21 +5,29 @@ use warnings;
 use Carp         'confess';
 use Scalar::Util 'blessed';
 
-use parent 'SQL::Combine::Action',
-           'SQL::Combine::Action::Role::WithRelations';
+use SQL::Combine::Action;
+use SQL::Combine::Action::Role::WithRelations;
 
-sub new {
-    my ($class, %args) = @_;
+our @ISA; BEGIN { @ISA = ('SQL::Combine::Action', 'SQL::Combine::Action::Role::WithRelations') }
+our %HAS; BEGIN {
+    %HAS = (
+        %SQL::Combine::Action::HAS,
+        %SQL::Combine::Action::Role::WithRelations::HAS,
+        inflator => sub {},
+        actions  => sub { confess 'The `actions` parameter is required' },
+    )
+}
 
-    my $self = $class->SUPER::new( %args );
+sub BUILDARGS {
+    my $class = shift;
+    my $args  = $class->SUPER::BUILDARGS( @_ );
 
-    if ( my $inflator = $args{inflator} ) {
-        (ref $inflator eq 'CODE')
-            || confess 'The `inflator` parameter must be a CODE ref';
-        $self->{inflator} = $inflator;
+    if ( my $inflator = $args->{inflator} ) {
+        confess 'The `inflator` parameter must be a CODE ref'
+            unless ref $inflator eq 'CODE';
     }
 
-    if ( my $actions = $args{actions} ) {
+    if ( my $actions = $args->{actions} ) {
         if ( ref $actions eq 'ARRAY' ) {
             (blessed $_ && $_->isa('SQL::Combine::Action'))
                 || confess 'If the `actions` parameter is an ARRAY ref, it must containt instances of `SQL::Combine::Action` only'
@@ -31,13 +39,9 @@ sub new {
         else {
             confess 'The `actions` parameter must be either an ARRAY ref of `SQL::Combine::Action` instance, or a CODE ref which returns that';
         }
-        $self->{actions} = $actions;
-    }
-    else {
-        confess 'The `actions` parameter is required';
     }
 
-    return $self;
+    return $args;
 }
 
 sub inflator     {    $_[0]->{inflator} }

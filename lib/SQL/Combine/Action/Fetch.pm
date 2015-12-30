@@ -5,34 +5,39 @@ use warnings;
 use Carp         'confess';
 use Scalar::Util 'blessed';
 
-use parent 'SQL::Combine::Action';
+use SQL::Combine::Action;
 
-sub new {
-    my ($class, %args) = @_;
+our @ISA; BEGIN { @ISA = ('SQL::Combine::Action') }
+our %HAS; BEGIN {
+    %HAS = (
+        %SQL::Combine::Action::HAS,
+        inflator => sub {},
+        query    => sub { confess 'The `query` parameter is required'  },
+        schema   => sub { confess 'The `schema` parameter is required' },
+    )
+}
 
-    my $self = $class->SUPER::new( %args );
+sub BUILDARGS {
+    my $class = shift;
+    my $args  = $class->SUPER::BUILDARGS( @_ );
 
-    my $schema = $args{schema};
-    (blessed $schema && $schema->isa('SQL::Combine::Schema'))
-        || confess 'The `schema` parameter is required and must be an instance of `SQL::Combine::Schema`';
-    $self->{schema} = $schema;
-
-    if ( my $query = $args{query} ) {
-        ((ref $query eq 'CODE') || (blessed $query && $query->isa('SQL::Combine::Query')))
-            || confess 'The `query` parameter must be an instance of `SQL::Combine::Query` or a CODE ref which returns one';
-        $self->{query} = $query;
-    }
-    else {
-        confess 'The `query` parameter is required';
-    }
-
-    if ( my $inflator = $args{inflator} ) {
-        (ref $inflator eq 'CODE')
-            || confess 'The `inflator` parameter must be a CODE ref';
-        $self->{inflator} = $inflator;
+    if ( my $schema = $args->{schema} ) {
+        confess 'The `schema` parameter is required and must be an instance of `SQL::Combine::Schema`'
+            unless blessed $schema && $schema->isa('SQL::Combine::Schema');
     }
 
-    return $self;
+    if ( my $query = $args->{query} ) {
+        confess 'The `query` parameter must be an instance of `SQL::Combine::Query` or a CODE ref which returns one'
+            unless ref $query eq 'CODE'
+                || blessed $query && $query->isa('SQL::Combine::Query');
+    }
+
+    if ( my $inflator = $args->{inflator} ) {
+        confess 'The `inflator` parameter must be a CODE ref'
+            unless ref $inflator eq 'CODE';
+    }
+
+    return $args;
 }
 
 sub schema { $_[0]->{schema} }

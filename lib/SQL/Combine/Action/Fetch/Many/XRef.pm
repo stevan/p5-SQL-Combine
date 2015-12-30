@@ -5,22 +5,31 @@ use warnings;
 use Carp         'confess';
 use Scalar::Util 'blessed';
 
-use parent 'SQL::Combine::Action::Fetch::Many';
+use SQL::Combine::Action::Fetch::Many;
 
-sub new {
-    my ($class, %args) = @_;
+our @ISA; BEGIN { @ISA = ('SQL::Combine::Action::Fetch::Many') }
+our %HAS; BEGIN {
+    %HAS = (
+        %SQL::Combine::Action::Fetch::Many::HAS,
+        xref => sub { confess 'The `xref` parameter is required' },
+    )
+}
 
-    (ref $args{query} eq 'CODE')
-        || confess 'The `query` parameter must be a CODE ref';
+sub BUILDARGS {
+    my $class = shift;
+    my $args  = $class->SUPER::BUILDARGS( @_ );
 
-    my $self = $class->SUPER::new( %args );
+    if ( my $query = $args->{query} ) {
+        confess 'The `query` parameter must be a CODE ref'
+            unless ref $query eq 'CODE';
+    }
 
-    my $xref = $args{xref};
-    (blessed $xref && $xref->isa('SQL::Combine::Action::Fetch'))
-        || confess 'The `xref` parameter is required and must be an instance of `SQL::Combine::Action::Fetch`';
-    $self->{xref} = $xref;
+    if ( my $xref = $args->{xref} ) {
+        confess 'The `xref` parameter is required and must be an instance of `SQL::Combine::Action::Fetch`'
+            unless blessed $xref && $xref->isa('SQL::Combine::Action::Fetch');
+    }
 
-    return $self;
+    return $args;
 }
 
 sub xref { $_[0]->{xref} }

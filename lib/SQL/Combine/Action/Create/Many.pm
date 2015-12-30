@@ -5,21 +5,28 @@ use warnings;
 use Carp         'confess';
 use Scalar::Util 'blessed';
 
-use parent 'SQL::Combine::Action::Create';
+use SQL::Combine::Action::Create;
 
-sub new {
-    my ($class, %args) = @_;
+our @ISA; BEGIN { @ISA = ('SQL::Combine::Action::Create') }
+our %HAS; BEGIN {
+    %HAS = (
+        %SQL::Combine::Action::Create::HAS,
+        id_key  => sub { 'id' },
+        queries => sub { confess 'The `queries` parameter is required' },
+        schema  => sub { confess 'The `schema` parameter is required' },
+    )
+}
 
-    my $self = $class->SUPER::new( %args );
+sub BUILDARGS {
+    my $class = shift;
+    my $args  = $class->SUPER::BUILDARGS( @_ );
 
-    $self->{id_key} = $args{id_key} // 'id';
+    if ( my $schema = $args->{schema} ) {
+        confess 'The `schema` parameter is required and must be an instance of `SQL::Combine::Schema`'
+            unless blessed $schema && $schema->isa('SQL::Combine::Schema');
+    }
 
-    my $schema = $args{schema};
-    (blessed $schema && $schema->isa('SQL::Combine::Schema'))
-        || confess 'The `schema` parameter is required and must be an instance of `SQL::Combine::Schema`';
-    $self->{schema} = $schema;
-
-    if ( my $queries = $args{queries} ) {
+    if ( my $queries = $args->{queries} ) {
         if ( ref $queries eq 'ARRAY' ) {
             (blessed $_ && $_->isa('SQL::Combine::Query'))
                 || confess 'If the `queries` parameter is an ARRAY ref, it must containt instances of `SQL::Combine::Query` only'
@@ -31,13 +38,9 @@ sub new {
         else {
             confess 'The `queries` parameter must be an ARRAY ref of instance of `SQL::Combine::Query` or a CODE ref which returns one';
         }
-        $self->{queries} = $queries;
-    }
-    else {
-        confess 'The `queries` parameter is required';
     }
 
-    return $self;
+    return $args;
 }
 
 sub schema  { $_[0]->{schema}  }

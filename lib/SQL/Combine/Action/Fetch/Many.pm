@@ -2,8 +2,16 @@ package SQL::Combine::Action::Fetch::Many;
 use strict;
 use warnings;
 
-use parent 'SQL::Combine::Action::Fetch',
-           'SQL::Combine::Action::Role::WithRelations';;
+use SQL::Combine::Action::Fetch;
+use SQL::Combine::Action::Role::WithRelations;
+
+our @ISA; BEGIN { @ISA = ('SQL::Combine::Action::Fetch', 'SQL::Combine::Action::Role::WithRelations') }
+our %HAS; BEGIN {
+    %HAS = (
+        %SQL::Combine::Action::Fetch::HAS,
+        %SQL::Combine::Action::Role::WithRelations::HAS
+    )
+}
 
 sub execute {
     my $self   = shift;

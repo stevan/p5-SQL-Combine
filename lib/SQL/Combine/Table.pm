@@ -2,6 +2,8 @@ package SQL::Combine::Table;
 use strict;
 use warnings;
 
+use mop::object;
+
 use Carp         'confess';
 use Scalar::Util 'blessed';
 
@@ -11,31 +13,33 @@ use SQL::Combine::Query::Upsert;
 use SQL::Combine::Query::Insert;
 use SQL::Combine::Query::Delete;
 
-sub new {
-    my ($class, %args) = @_;
+our @ISA; BEGIN { @ISA = ('mop::object') }
+our %HAS; BEGIN {
+    %HAS = (
+        name       => sub { confess 'You must supply a `name` parameter'   },
+        driver     => sub { confess 'You must supply a `driver` parameter' },
+        table_name => sub {},
+        columns    => sub {},
+        schema     => sub {},
+    )
+}
 
-    ($args{name})
-        || confess 'You must supply a `name` parameter';
-    ($args{driver})
-        || confess 'You must supply a `driver` parameter';
+sub BUILDARGS {
+    my $class = shift;
+    my $args  = $class->SUPER::BUILDARGS( @_ );
 
-    if ( my $columns = $args{columns} ) {
-        (ref $columns eq 'ARRAY')
-            || confess 'The `columns` parameter must be an ARRAY ref';
+    if ( my $columns = $args->{columns} ) {
+        confess 'The `columns` parameter must be an ARRAY ref'
+            unless ref $columns eq 'ARRAY';
     }
 
-    if ( my $schema = $args{schema} ) {
-        (blessed $schema && $schema->isa('SQL::Combine::Schema'))
-            || confess 'The `schema` parameter must be an instance of `SQL::Combine::Schema`';
+    if ( my $schema = $args->{schema} ) {
+        confess 'The `schema` parameter must be an instance of `SQL::Combine::Schema`'
+            unless blessed $schema
+                && $schema->isa('SQL::Combine::Schema');
     }
 
-    bless {
-        name       => $args{name},
-        driver     => $args{driver},
-        table_name => $args{table_name},
-        columns    => $args{columns},
-        schema     => $args{schema},
-    } => $class;
+    return $args;
 }
 
 sub name   { $_[0]->{name}   }
@@ -49,10 +53,11 @@ sub has_columns { !! $_[0]->{columns} }
 sub schema     {    $_[0]->{schema} }
 sub has_schema { !! $_[0]->{schema} }
 
-sub _associate_with_schema {
+sub associate_with_schema {
     my ($self, $schema) = @_;
     Scalar::Util::weaken( $schema );
     $self->{schema} = $schema;
+    $self;
 }
 
 sub fully_qualify_column_name {

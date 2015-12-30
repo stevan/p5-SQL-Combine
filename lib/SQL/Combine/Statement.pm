@@ -2,20 +2,16 @@ package SQL::Combine::Statement;
 use strict;
 use warnings;
 
+use mop::object;
+
 use Carp 'confess';
 
-sub new {
-    my ($class, %args) = @_;
-
-    ($args{table_name})
-        || confess 'You must supply a `table_name` parameter';
-    ($args{driver})
-        || confess 'You must supply a `driver` parameter';
-
-    bless {
-        driver     => $args{driver},
-        table_name => $args{table_name},
-    } => $class;
+our @ISA; BEGIN { @ISA = ('mop::object') }
+our %HAS; BEGIN {
+    %HAS = (
+        table_name => sub { confess 'You must supply a `table_name` parameter' },
+        driver     => sub { confess 'You must supply a `driver` parameter'     },
+    )
 }
 
 sub driver     { $_[0]->{driver}     }

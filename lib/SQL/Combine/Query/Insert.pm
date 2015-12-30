@@ -2,20 +2,18 @@ package SQL::Combine::Query::Insert;
 use strict;
 use warnings;
 
+use Carp  'confess';
 use Clone ();
-
 use SQL::Composer::Insert;
 
-use parent 'SQL::Combine::Query';
+use SQL::Combine::Query;
 
-sub new {
-    my ($class, %args) = @_;
-
-    my $self = $class->SUPER::new( %args );
-
-    $self->{values} = $args{values};
-
-    return $self;
+our @ISA; BEGIN { @ISA = ('SQL::Combine::Query') }
+our %HAS; BEGIN {
+    %HAS = (
+        %SQL::Combine::Query::HAS,
+        values => sub { confess 'The `values` parameter is required' }
+    )
 }
 
 sub to_sql  { $_[0]->_composer->to_sql  }

@@ -4,28 +4,34 @@ use warnings;
 
 use Carp 'confess';
 
-use parent 'SQL::Combine::Query';
+use SQL::Combine::Query;
 
-sub new {
-    my ($class, %args) = @_;
+our @ISA; BEGIN { @ISA = ('SQL::Combine::Query') }
+our %HAS; BEGIN {
+    %HAS = (
+        %SQL::Combine::Query::HAS,
+        id           => sub {},
+        sql          => sub { confess 'The `sql` parameter is required' },
+        bind         => sub { confess 'The `bind` parameter is required' },
+        row_inflator => sub {},
+    )
+}
 
-    my $self = $class->SUPER::new( %args );
+sub BUILDARGS {
+    my $class = shift;
+    my $args  = $class->SUPER::BUILDARGS( @_ );
 
-    $self->{id}  = $args{id};
-    $self->{sql} = $args{sql} || confess 'You must supply a `sql` parameter';
-
-    my $bind = $args{bind};
-    ($bind && ref $bind eq 'ARRAY')
-        || confess 'The `bind` parameter is required and must be an ARRAY ref';
-    $self->{bind} = $bind;
-
-    if ( my $row_inflator = $args{row_inflator} ) {
-        (ref $row_inflator eq 'CODE')
-            || confess 'The `row_inflator` parameter is required and must be a CODE ref';
-        $self->{row_inflator} = $row_inflator;
+    if ( my $row_inflator = $args->{row_inflator} ) {
+        confess 'The `row_inflator` parameter must be a CODE ref'
+            unless ref $row_inflator eq 'CODE';
     }
 
-    return $self;
+    if ( my $bind = $args->{bind} ) {
+        confess 'The `bind` parameter is required and must be an ARRAY ref'
+            unless ref $bind eq 'ARRAY';
+    }
+
+    return $args;
 }
 
 sub id     {    $_[0]->{id} }

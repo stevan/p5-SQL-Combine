@@ -4,33 +4,37 @@ use warnings;
 
 use Carp  'confess';
 use Clone ();
-
 use SQL::Composer::Select;
 
-use parent 'SQL::Combine::Query';
+use SQL::Combine::Query;
 
-sub new {
-    my ($class, %args) = @_;
+our @ISA; BEGIN { @ISA = ('SQL::Combine::Query') }
+our %HAS; BEGIN {
+    %HAS = (
+        %SQL::Combine::Query::HAS,
+        columns      => sub { confess 'The `columns` parameter is required' },
+        join         => sub {},
+        where        => sub {},
+        group_by     => sub {},
+        order_by     => sub {},
+        having       => sub {},
+        limit        => sub {},
+        offset       => sub {},
+        for_update   => sub {},
+        row_inflator => sub {},
+    )
+}
 
-    my $self = $class->SUPER::new( %args );
+sub BUILDARGS {
+    my $class = shift;
+    my $args  = $class->SUPER::BUILDARGS( @_ );
 
-    $self->{join}       = $args{join};
-    $self->{columns}    = $args{columns};
-    $self->{where}      = $args{where};
-    $self->{group_by}   = $args{group_by};
-    $self->{order_by}   = $args{order_by};
-    $self->{having}     = $args{having};
-    $self->{limit}      = $args{limit};
-    $self->{offset}     = $args{offset};
-    $self->{for_update} = $args{for_update};
-
-    if ( my $row_inflator = $args{row_inflator} ) {
-        (ref $row_inflator eq 'CODE')
-            || confess 'The `row_inflator` parameter is required and must be a CODE ref';
-        $self->{row_inflator} = $row_inflator;
+    if ( my $row_inflator = $args->{row_inflator} ) {
+        confess 'The `row_inflator` parameter must be a CODE ref'
+            unless ref $row_inflator eq 'CODE';
     }
 
-    return $self;
+    return $args;
 }
 
 sub to_sql  { $_[0]->_composer->to_sql  }

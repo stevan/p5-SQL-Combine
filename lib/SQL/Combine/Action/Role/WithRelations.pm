@@ -5,8 +5,10 @@ use warnings;
 use Carp         'confess';
 use Scalar::Util 'blessed';
 
-sub relations     {    $_[0]->{relations} //= {}   }
-sub all_relations { %{ $_[0]->{relations} //= {} } }
+our %HAS; BEGIN { %HAS = ( relations => sub { +{} } ) }
+
+sub relations     {    $_[0]->{relations}   }
+sub all_relations { %{ $_[0]->{relations} } }
 
 sub relates_to {
     my ($self, $name, $action) = @_;

@@ -2,20 +2,18 @@ package SQL::Combine::Query::Upsert;
 use strict;
 use warnings;
 
+use Carp  'confess';
 use Clone ();
-
 use SQL::Composer::Upsert;
 
-use parent 'SQL::Combine::Query';
+use SQL::Combine::Query;
 
-sub new {
-    my ($class, %args) = @_;
-
-    my $self = $class->SUPER::new( %args );
-
-    $self->{values} = $args{values};
-
-    return $self;
+our @ISA; BEGIN { @ISA = ('SQL::Combine::Query') }
+our %HAS; BEGIN {
+    %HAS = (
+        %SQL::Combine::Query::HAS,
+        values => sub { confess 'The `values` parameter is required' }
+    )
 }
 
 sub to_sql  { $_[0]->_composer->to_sql  }
@@ -32,7 +30,6 @@ sub _composer {
 }
 
 sub values { $_[0]->{values} }
-sub where  { $_[0]->{where}  }
 
 sub is_idempotent { 0 }
 

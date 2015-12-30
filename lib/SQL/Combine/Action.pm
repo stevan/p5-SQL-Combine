@@ -2,10 +2,12 @@ package SQL::Combine::Action;
 use strict;
 use warnings;
 
+use mop::object;
+
 use Carp         'confess';
 use Scalar::Util 'blessed';
 
-sub new { bless {} => $_[0] }
+our @ISA; BEGIN { @ISA = ('mop::object') }
 
 sub execute;
 sub is_static;
@@ -23,7 +25,7 @@ sub execute_query {
     my @bind = $query->to_bind;
 
     $ENV{'SQL_COMBINE_DEBUG_SHOW_SQL'}
-        && print STDERR '[',__PACKAGE__,'] SQL: "',$sql,'" BIND: (',(join ', ' => @bind),")\n";
+        && print STDERR 'SQL: "',$sql,'" BIND: (',(join ', ' => @bind),")\n";
 
     my $sth = $dbh->prepare( $sql );
     $sth->execute( @bind );

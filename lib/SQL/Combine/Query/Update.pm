@@ -2,24 +2,21 @@ package SQL::Combine::Query::Update;
 use strict;
 use warnings;
 
+use Carp  'confess';
 use Clone ();
-
 use SQL::Composer::Update;
 
-use parent 'SQL::Combine::Query';
+use SQL::Combine::Query;
 
-sub new {
-    my ($class, %args) = @_;
-
-    my $self = $class->SUPER::new( %args );
-
-    $self->{values} = $args{values};
-    $self->{set}    = $args{set};
-    $self->{where}  = $args{where};
-    $self->{limit}  = $args{limit};
-    $self->{offset} = $args{offset};
-
-    return $self;
+our @ISA; BEGIN { @ISA = ('SQL::Combine::Query') }
+our %HAS; BEGIN {
+    %HAS = (
+        %SQL::Combine::Query::HAS,
+        values => sub { confess 'The `values` parameter is required' },
+        where  => sub {},
+        limit  => sub {},
+        offset => sub {},
+    )
 }
 
 sub to_sql  { $_[0]->_composer->to_sql  }
@@ -32,15 +29,12 @@ sub _composer {
         table  => $self->table_name,
 
         values => Clone::clone($self->{values}),
-        set    => Clone::clone($self->{set}),
-
         where  => Clone::clone($self->{where}),
 
         limit  => Clone::clone($self->{limit}),
         offset => Clone::clone($self->{offset}),
     );
 }
-
 
 sub values { $_[0]->{values} }
 sub set    { $_[0]->{set}    }

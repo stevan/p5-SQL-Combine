@@ -3,21 +3,18 @@ use strict;
 use warnings;
 
 use Clone ();
-
 use SQL::Composer::Delete;
 
-use parent 'SQL::Combine::Query';
+use SQL::Combine::Query;
 
-sub new {
-    my ($class, %args) = @_;
-
-    my $self = $class->SUPER::new( %args );
-
-    $self->{where}  = $args{where};
-    $self->{limit}  = $args{limit};
-    $self->{offset} = $args{offset};
-
-    return $self;
+our @ISA; BEGIN { @ISA = ('SQL::Combine::Query') }
+our %HAS; BEGIN {
+    %HAS = (
+        %SQL::Combine::Query::HAS,
+        where  => sub {},
+        limit  => sub {},
+        offset => sub {},
+    )
 }
 
 sub to_sql  { $_[0]->_composer->to_sql  }

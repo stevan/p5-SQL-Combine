@@ -5,19 +5,26 @@ use warnings;
 use Carp         'confess';
 use Scalar::Util 'blessed';
 
-use parent 'SQL::Combine::Action::Fetch::One';
+use SQL::Combine::Action::Fetch::One;
 
-sub new {
-    my ($class, %args) = @_;
+our @ISA; BEGIN { @ISA = ('SQL::Combine::Action::Fetch::One') }
+our %HAS; BEGIN {
+    %HAS = (
+        %SQL::Combine::Action::Fetch::One::HAS,
+        or_create => sub { confess 'The `or_create` parameter is required' },
+    )
+}
 
-    my $self = $class->SUPER::new( %args );
+sub BUILDARGS {
+    my $class = shift;
+    my $args  = $class->SUPER::BUILDARGS( @_ );
 
-    my $or_create = $args{or_create};
-    (blessed $or_create && $or_create->isa('SQL::Combine::Action::Create::One'))
-        || confess 'The `or_create` parameter is required and must be an instance of `SQL::Combine::Action::Create::One`';
-    $self->{or_create} = $or_create;
+    if ( my $or_create = $args->{or_create} ) {
+        confess 'The `or_create` parameter is required and must be an instance of `SQL::Combine::Action::Create::One`'
+            unless blessed $or_create && $or_create->isa('SQL::Combine::Action::Create::One');
+    }
 
-    return $self;
+    return $args;
 }
 
 sub or_create { $_[0]->{or_create} }

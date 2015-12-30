@@ -2,40 +2,41 @@ package SQL::Combine::Schema;
 use strict;
 use warnings;
 
+use mop::object;
+
 use Carp         'confess';
 use Scalar::Util 'blessed';
 
-sub new {
-    my ($class, %args) = @_;
+our @ISA; BEGIN { @ISA = ('mop::object') }
+our %HAS; BEGIN {
+    %HAS = (
+        name       => sub {},
+        tables     => sub {},
+        dbh        => sub { confess 'The `dbh` parameter is required and must be a HASH ref' },
+        _table_map => sub { +{} },
+    )
+}
 
-    ($args{dbh} && ref $args{dbh} eq 'HASH')
-        || confess 'The `dbh` parameter is required and must be a HASH ref';
+sub BUILDARGS {
+    my $class = shift;
+    my $args  = $class->SUPER::BUILDARGS( @_ );
 
-    ($args{tables} && ref $args{tables} eq 'ARRAY')
-        || confess 'The `tables` parameter is required and must be an ARRAY ref';
+    confess 'The `tables` parameter is required and must be an ARRAY ref'
+        unless ref $args->{tables} eq 'ARRAY';
 
-    my @tables = @{ $args{tables} };
+    (blessed $_ && $_->isa('SQL::Combine::Table'))
+        || confess 'The `tables` parameter must contain only intances of `SQL::Combine::Table`'
+            foreach @{ $args->{tables} };
 
-    my %_table_map;
-    foreach my $table ( @tables ) {
-        (blessed $table && $table->isa('SQL::Combine::Table'))
-            || confess 'The `tables` parameter must contain only intances of `SQL::Combine::Table`';
-        $_table_map{ $table->name } = $table;
+    return $args;
+}
+
+sub BUILD {
+    my ($self) = @_;
+    foreach my $table ( @{ $self->{tables} } ) {
+        $table->associate_with_schema( $self );
+        $self->{_table_map}->{ $table->name } = $table;
     }
-
-    my $self = bless {
-        name       => $args{name},
-        dbh        => $args{dbh},
-        tables     => \@tables,
-        # private ...
-        _table_map => \%_table_map,
-    } => $class;
-
-    foreach my $table ( @tables ) {
-        $table->_associate_with_schema( $self );
-    }
-
-    return $self;
 }
 
 sub name   { $_[0]->{name}   }

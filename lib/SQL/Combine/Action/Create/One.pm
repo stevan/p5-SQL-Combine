@@ -5,31 +5,36 @@ use warnings;
 use Carp         'confess';
 use Scalar::Util 'blessed';
 
-use parent 'SQL::Combine::Action::Create',
-           'SQL::Combine::Action::Role::WithRelations';;
+use SQL::Combine::Action::Create;
+use SQL::Combine::Action::Role::WithRelations;
 
-sub new {
-    my ($class, %args) = @_;
+our @ISA; BEGIN { @ISA = ('SQL::Combine::Action::Create', 'SQL::Combine::Action::Role::WithRelations') }
+our %HAS; BEGIN {
+    %HAS = (
+        %SQL::Combine::Action::Create::HAS,
+        %SQL::Combine::Action::Role::WithRelations::HAS,
+        id_key => sub { 'id' },
+        query  => sub { confess 'The `query` parameter is required' },
+        schema => sub { confess 'The `schema` parameter is required' },
+    )
+}
 
-    my $self = $class->SUPER::new( %args );
+sub BUILDARGS {
+    my $class = shift;
+    my $args  = $class->SUPER::BUILDARGS( @_ );
 
-    $self->{id_key} = $args{id_key} // 'id';
-
-    my $schema = $args{schema};
-    (blessed $schema && $schema->isa('SQL::Combine::Schema'))
-        || confess 'The `schema` parameter is required and must be an instance of `SQL::Combine::Schema`';
-    $self->{schema} = $schema;
-
-    if ( my $query = $args{query} ) {
-        ((ref $query eq 'CODE') || (blessed $query && $query->isa('SQL::Combine::Query')))
-            || confess 'The `query` parameter must be an instance of `SQL::Combine::Query` or a CODE ref which returns one';
-        $self->{query} = $query;
+    if ( my $schema = $args->{schema} ) {
+        confess 'The `schema` parameter is required and must be an instance of `SQL::Combine::Schema`'
+            unless blessed $schema && $schema->isa('SQL::Combine::Schema');
     }
-    else {
-        confess 'The `query` parameter is required';
+
+    if ( my $query = $args->{query} ) {
+        confess 'The `query` parameter must be an instance of `SQL::Combine::Query` or a CODE ref which returns one'
+            unless ref $query eq 'CODE'
+                || blessed $query && $query->isa('SQL::Combine::Query');
     }
 
-    return $self;
+    return $args;
 }
 
 sub schema { $_[0]->{schema} }
