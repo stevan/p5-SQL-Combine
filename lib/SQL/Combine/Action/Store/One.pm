@@ -8,11 +8,11 @@ use Scalar::Util 'blessed';
 use SQL::Combine::Action::Store;
 use SQL::Combine::Action::Role::WithRelations;
 
-our @ISA; BEGIN { @ISA = ('SQL::Combine::Action::Store', 'SQL::Combine::Action::Role::WithRelations') }
-our %HAS; BEGIN {
+our @ISA;  BEGIN { @ISA  = ('SQL::Combine::Action::Store') }
+our @DOES; BEGIN { @DOES = ('SQL::Combine::Action::Role::WithRelations') }
+our %HAS;  BEGIN {
     %HAS = (
         %SQL::Combine::Action::Store::HAS,
-        %SQL::Combine::Action::Role::WithRelations::HAS,
         query  => sub { confess 'The `query` parameter is required' },
         schema => sub { confess 'The `schema` parameter is required' },
     )
@@ -63,6 +63,15 @@ sub execute {
     my $rels = $self->execute_relations( $hash );
 
     return $self->merge_results_and_relations( $hash, $rels );
+}
+
+BEGIN {
+    use mop;
+    mop::internal::util::APPLY_ROLES(
+        mop::role->new( name => __PACKAGE__ ),
+        \@DOES,
+        to => 'role'
+    )
 }
 
 1;

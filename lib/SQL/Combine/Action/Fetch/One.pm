@@ -5,13 +5,9 @@ use warnings;
 use SQL::Combine::Action::Fetch;
 use SQL::Combine::Action::Role::WithRelations;
 
-our @ISA; BEGIN { @ISA = ('SQL::Combine::Action::Fetch', 'SQL::Combine::Action::Role::WithRelations') }
-our %HAS; BEGIN {
-    %HAS = (
-        %SQL::Combine::Action::Fetch::HAS,
-        %SQL::Combine::Action::Role::WithRelations::HAS
-    )
-}
+our @ISA;  BEGIN { @ISA  = ('SQL::Combine::Action::Fetch') }
+our @DOES; BEGIN { @DOES = ('SQL::Combine::Action::Role::WithRelations') }
+our %HAS;  BEGIN { %HAS  = (%SQL::Combine::Action::Fetch::HAS) }
 
 sub execute {
     my $self   = shift;
@@ -33,6 +29,15 @@ sub execute {
         : $self->merge_results_and_relations( $hash, $rels );
 
     return $obj;
+}
+
+BEGIN {
+    use mop;
+    mop::internal::util::APPLY_ROLES(
+        mop::role->new( name => __PACKAGE__ ),
+        \@DOES,
+        to => 'role'
+    )
 }
 
 1;

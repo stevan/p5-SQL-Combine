@@ -8,11 +8,11 @@ use Scalar::Util 'blessed';
 use SQL::Combine::Action;
 use SQL::Combine::Action::Role::WithRelations;
 
-our @ISA; BEGIN { @ISA = ('SQL::Combine::Action', 'SQL::Combine::Action::Role::WithRelations') }
-our %HAS; BEGIN {
+our @ISA;  BEGIN { @ISA  = ('SQL::Combine::Action') }
+our @DOES; BEGIN { @DOES = ('SQL::Combine::Action::Role::WithRelations') }
+our %HAS;  BEGIN {
     %HAS = (
         %SQL::Combine::Action::HAS,
-        %SQL::Combine::Action::Role::WithRelations::HAS,
         inflator => sub {},
         actions  => sub { confess 'The `actions` parameter is required' },
     )
@@ -86,6 +86,15 @@ sub execute {
         : $self->merge_results_and_relations( \@results, $rels );
 
     return $obj;
+}
+
+BEGIN {
+    use mop;
+    mop::internal::util::APPLY_ROLES(
+        mop::role->new( name => __PACKAGE__ ),
+        \@DOES,
+        to => 'role'
+    )
 }
 
 1;
