@@ -17,6 +17,9 @@ our %HAS; BEGIN {
 sub driver     { $_[0]->{driver}     }
 sub table_name { $_[0]->{table_name} }
 
+sub to_sql;
+sub to_bind;
+
 our $IS_ABSTRACT; BEGIN { $IS_ABSTRACT = 1 }
 
 1;

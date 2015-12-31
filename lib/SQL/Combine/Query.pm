@@ -10,9 +10,6 @@ our %HAS; BEGIN { %HAS = %SQL::Combine::Statement::HAS }
 sub locate_id;
 sub is_idempotent;
 
-sub to_sql;
-sub to_bind;
-
 our $IS_ABSTRACT; BEGIN { $IS_ABSTRACT = 1 }
 
 1;
