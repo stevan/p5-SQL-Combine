@@ -9,13 +9,13 @@ use Carp 'confess';
 our @ISA; BEGIN { @ISA = ('mop::object') }
 our %HAS; BEGIN {
     %HAS = (
-        table_name => sub { confess 'You must supply a `table_name` parameter' },
-        driver     => sub { confess 'You must supply a `driver` parameter'     },
+        driver => sub { confess 'You must supply a `driver` parameter'     },
     )
 }
 
-sub driver     { $_[0]->{driver}     }
-sub table_name { $_[0]->{table_name} }
+sub driver     { $_[0]->{driver} }
+
+sub is_idempotent;
 
 sub to_sql;
 sub to_bind;
