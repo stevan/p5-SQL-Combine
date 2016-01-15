@@ -2,6 +2,8 @@ package SQL::Combine::Query;
 use strict;
 use warnings;
 
+use Carp 'confess';
+
 use SQL::Combine::Statement;
 
 our @ISA; BEGIN { @ISA = ('SQL::Combine::Statement')   }

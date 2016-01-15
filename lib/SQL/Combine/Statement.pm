@@ -9,11 +9,11 @@ use Carp 'confess';
 our @ISA; BEGIN { @ISA = ('mop::object') }
 our %HAS; BEGIN {
     %HAS = (
-        driver => sub { confess 'You must supply a `driver` parameter'     },
+        driver => sub { confess 'You must supply a `driver` parameter' },
     )
 }
 
-sub driver     { $_[0]->{driver} }
+sub driver { $_[0]->{driver} }
 
 sub is_idempotent;
 
